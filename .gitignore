@@ -1,0 +1,6 @@
+*.pyc
+.DS_Store
+tmp/
+build/
+dist/
+fccsmap.egg-info/
