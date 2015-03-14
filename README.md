@@ -1,7 +1,7 @@
 # fccsmap
 
 This package supports the look-up of FCCS fuelbed information by lat/lng or
-vector shape data.
+vector geo spatial data.
 
 ## Development
 
