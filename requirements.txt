@@ -1,1 +1,2 @@
 git+https://github.com/pnwairfire/pyairfire.git@v0.6.12
+gdal==1.11.2
