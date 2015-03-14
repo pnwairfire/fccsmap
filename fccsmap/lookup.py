@@ -16,7 +16,7 @@ __all__ = [
 class FccsLookUp(object):
 
     def __init__(self, **options):
-        self.fccs_grid = FccsGrid(**options).load()
+        self.fccs_grid = FccsGrid(**options)
 
 
     ##
