@@ -64,7 +64,6 @@ class FccsLookUp(object):
     ##
 
     # def _create_polygon(self, multipolygon_coordinates):
-    #     import pdb;pdb.set_trace()
     #     multipolygon = ogr.Geometry(ogr.wkbMultiPolygon)
     #     for polygon_coordinates in multipolygon_coordinates:
     #         polygon = ogr.Geometry(ogr.wkbPolygon) # Is this the correct type?

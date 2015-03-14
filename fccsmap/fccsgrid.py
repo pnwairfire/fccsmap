@@ -38,7 +38,6 @@ class FccsGrid(object):
             os.path.dirname(__file__) + '/data/fccs_fuelload.nc')
         filename = "NETCDF:%s:FCCS_FuelLoading" % (filename)
         self.gridfile = gdal.Open(filename)
-        import pdb;pdb.set_trace()
         self.metadata = self.gridfile.GetMetadata()
 
         for k, v in self.metadata.iteritems():
