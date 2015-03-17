@@ -5,9 +5,26 @@ vector geo spatial data.
 
 ## Development
 
-### Install Dependencies
+### Install Dependencies@
 
-Run the following to install dependencies:
+fccsmap depends on gdal, proj, and netcdf, which must be installed manually.
+On a mac, you can do so with [Homebrew](http://brew.sh/):
+
+    brew install homebrew/science/netcdf
+    brew install proj
+    brew install gdal --with-netcdf --enable-unsupported
+
+On ubuntu, the following should be sufficient:
+
+    sudo apt-get install libnetcdf-dev
+    sudo apt-get install proj
+    sudo apt-get install libgdal1-1.7.0
+
+Note that the '--with-netcdf' option is required to build gdal with the
+netCDF driver. See http://trac.osgeo.org/gdal/wiki/NetCDF for more information.
+
+
+Run the following to install python dependencies:
 
     pip install -r requirements.txt
 
