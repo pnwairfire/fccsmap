@@ -8,9 +8,10 @@ import json
 import os
 from collections import defaultdict
 
+from osgeo import gdal
 from pyproj import Proj
 from rasterstats import zonal_stats
-from shapely.geometry import shape
+from shapely import ops, geometry
 
 __all__ = [
     'FccsLookUp'
@@ -27,7 +28,7 @@ class FccsLookUp(object):
         if not filename:
              filename = AK_FUEL_LOAD_NC if options.get('is_alaska') else FUEL_LOAD_NC
         self.gridfile_specifier = "NETCDF:%s:FCCS_FuelLoading" % (filename)
-
+        self._initialize_projector()
     ##
     ## Public Interface
     ##
@@ -59,8 +60,8 @@ class FccsLookUp(object):
 
         if hasattr(geo_data, 'capitalize'):
             geo_data = json.loads(geo_data)
-        self._project(geo_data)
-        s = shape(geo_data)
+        s = geometry.shape(geo_data)
+        s = ops.transform(self.projector, s)
 
         def counts(x):
             counts = defaultdict(lambda: 0)
@@ -74,31 +75,29 @@ class FccsLookUp(object):
             add_stats={'counts':counts})
         return self._compute_percentages(stats)
 
-    NC_PROJECTION = 'lcc' # TODO: read this from nc file
-    NC_DATUM = 'NAD83' # TODO: read this from nc file
-
     ##
     ## Helper methods
     ##
 
-    def _project(self, geo_data):
-        p = Proj(
-            proj=self.NC_PROJECTION,
-            datum=self.NC_DATUM,
-            lat_0=40, # TODO: read this from nc file
-            lat_1=33, # TODO: read this from nc file
-            lat_2=45, # TODO: read this from nc file
-            lon_0=-100 # TODO: read this from nc file
+    def _initialize_projector(self):
+        self.gridfile = gdal.Open(self.gridfile_specifier)
+        # TODO: inspect gridfile to determine type projection used and create
+        # correct projector (lcc, albers_conical_equal_area, etc)
+        self.nc_datum = 'NAD83' # TODO: read this self.gridfile
+        self.nc_projection = 'lcc' # TODO: read/determine this self.gridfile
+        self.xcenter = 40 # TODO: read this self.gridfile
+        self.ycenter = -100 # TODO: read this self.gridfile
+        self.reference_parallel_a=33
+        self.reference_parallel_b=45
+
+        self.projector = Proj(
+            proj=self.nc_projection,
+            datum=self.nc_datum,
+            lat_0=self.xcenter,
+            lat_1=self.reference_parallel_a,
+            lat_2=self.reference_parallel_b,
+            lon_0=self.ycenter
         )
-        #p = Proj(init='epsg:26915')
-        for polygon_coordinates in geo_data["coordinates"]:
-            for outer in polygon_coordinates:
-                for coordinates in outer:
-                    projected = p(*coordinates)
-                    coordinates[0] = projected[0]
-                    coordinates[1] = projected[1]
-                    coordinates.append(0)
-                    # TODO: set the coordinates to thep projected
 
     def _compute_percentages(self, stats):
         total_counts = defaultdict(lambda: 0)
