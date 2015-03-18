@@ -6,6 +6,7 @@ __copyright__   = "Copyright 2014, AirFire, PNW, USFS"
 
 import json
 import os
+from collections import defaultdict
 
 from pyproj import Proj
 from rasterstats import zonal_stats
@@ -56,40 +57,29 @@ class FccsLookUp(object):
             }
         """
 
-        # TEST
-        # geo_data = {
-        #         "type": "MultiPolygon",
-        #         "coordinates": [
-        #             [
-        #                 [
-        #                     [-190000, 1320000],
-        #                     [-170000, 1330000],
-        #                     [-170000, 1310000],
-        #                     [-190000, 1310000],
-        #                     [-190000, 1320000]
-        #                 ]
-        #             ]
-        #         ]
-        #     }
-
-
-        #multipolygon = self._create_polygon(multipolygon_coordinates)
         if hasattr(geo_data, 'capitalize'):
             geo_data = json.loads(geo_data)
         self._project(geo_data)
-        #import pdb;pdb.set_trace()
         s = shape(geo_data)
 
-        def foo(x):
-            # TODO: implement
-            #import pdb;pdb.set_trace()
-            return 0
+        def counts(x):
+            counts = defaultdict(lambda: 0)
+            for i in xrange(len(x.data)):
+                for j in xrange(len(x.data[i])):
+                    if not x.mask[i][j]:
+                        counts[x.data[i][j]] += 1
+            return dict(counts)
 
-        stats = zonal_stats(s, self.gridfile_specifier, add_stats={'foo':foo})
-        return stats
+        stats = zonal_stats(s, self.gridfile_specifier,
+            add_stats={'counts':counts})
+        return self._compute_percentages(stats)
 
     NC_PROJECTION = 'lcc' # TODO: read this from nc file
     NC_DATUM = 'NAD83' # TODO: read this from nc file
+
+    ##
+    ## Helper methods
+    ##
 
     def _project(self, geo_data):
         p = Proj(
@@ -109,3 +99,11 @@ class FccsLookUp(object):
                     coordinates[1] = projected[1]
                     coordinates.append(0)
                     # TODO: set the coordinates to thep projected
+
+    def _compute_percentages(self, stats):
+        total_counts = defaultdict(lambda: 0)
+        for stat_set in stats:
+            for fccs_id, count in stat_set['counts'].items():
+                total_counts[fccs_id] += count
+        total = float(sum(total_counts.values()))
+        return {str(k):float(v)/total for k,v in total_counts.items()}
