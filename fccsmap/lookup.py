@@ -112,23 +112,3 @@ class FccsLookUp(object):
                     coordinates[1] = projected[1]
                     coordinates.append(0)
                     # TODO: set the coordinates to thep projected
-
-
-    ##
-    ## Helper methods
-    ##
-
-    # def _create_polygon(self, multipolygon_coordinates):
-    #     multipolygon = ogr.Geometry(ogr.wkbMultiPolygon)
-    #     for polygon_coordinates in multipolygon_coordinates:
-    #         polygon = ogr.Geometry(ogr.wkbPolygon) # Is this the correct type?
-    #         # TODO: figure out why array of coordinates is nested within an
-    #         # array of size 1 for each polygon
-    #         for coordinate in polygon_coordinates[0]:
-    #             point = ogr.Geometry(ogr.wkbPoint)
-    #             point.AddPoint(*coordinate)
-    #             polygon.AddGeometry(point)
-
-    #         multipolygon.AddGeometry(polygon)
-    #     return multipolygon
-
