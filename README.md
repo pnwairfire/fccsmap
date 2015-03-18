@@ -18,6 +18,7 @@ On ubuntu, the following should be sufficient:
 
     sudo apt-get install libnetcdf-dev
     sudo apt-get install proj
+    sudo apt-get install python-gdal
     sudo apt-get install libgdal1-1.7.0
 
 Note that the '--with-netcdf' option is required to build gdal with the
