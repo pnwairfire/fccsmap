@@ -68,6 +68,8 @@ class FccsLookUp(object):
             for i in xrange(len(x.data)):
                 for j in xrange(len(x.data[i])):
                     if not x.mask[i][j]:
+                        # Note: if x.data[i][j] < 0, it's up
+                        # to calling code to deal with it
                         counts[x.data[i][j]] += 1
             return dict(counts)
 
@@ -81,23 +83,23 @@ class FccsLookUp(object):
 
     def _initialize_projector(self):
         self.gridfile = gdal.Open(self.gridfile_specifier)
-        # TODO: inspect gridfile to determine type projection used and create
-        # correct projector (lcc, albers_conical_equal_area, etc)
-        self.nc_datum = 'NAD83' # TODO: read this self.gridfile
-        self.nc_projection = 'lcc' # TODO: read/determine this self.gridfile
-        self.xcenter = 40 # TODO: read this self.gridfile
-        self.ycenter = -100 # TODO: read this self.gridfile
-        self.reference_parallel_a=33
-        self.reference_parallel_b=45
+        metadata = self.gridfile.GetMetadata()
 
-        self.projector = Proj(
-            proj=self.nc_projection,
-            datum=self.nc_datum,
-            lat_0=self.xcenter,
-            lat_1=self.reference_parallel_a,
-            lat_2=self.reference_parallel_b,
-            lon_0=self.ycenter
-        )
+        if (metadata.has_key('FCCS_FuelLoading#grid_mapping')
+                and metadata['FCCS_FuelLoading#grid_mapping'] == 'lambert_conformal_conic':
+            self.projector = Proj(
+                proj='lcc',
+                #datum='NAD83', # TODO: read this self.gridfile
+                lat_0=metadata['lambert_conformal_conic#latitude_of_projection_origin'],
+                lat_1=metadata['lambert_conformal_conic#standard_parallel_1'],
+                lat_2=metadata['lambert_conformal_conic#standard_parallel_2'],
+                lon_0=metadata['lambert_conformal_conic#central_meridian']
+            )
+        else:
+            raise ValueError("Grid mapping projection not supported: %s" % (
+                metadata['FCCS_FuelLoading#grid_mapping']
+            ))
+
 
     def _compute_percentages(self, stats):
         total_counts = defaultdict(lambda: 0)
