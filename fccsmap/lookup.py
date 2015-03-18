@@ -7,12 +7,9 @@ __copyright__   = "Copyright 2014, AirFire, PNW, USFS"
 import json
 import os
 
-from osgeo import ogr
 from pyproj import Proj
 from rasterstats import zonal_stats
 from shapely.geometry import shape
-
-from .fccsgrid import FccsGrid
 
 __all__ = [
     'FccsLookUp'
