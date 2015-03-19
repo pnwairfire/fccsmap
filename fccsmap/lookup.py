@@ -5,6 +5,7 @@ __author__      = "Joel Dubowy"
 __copyright__   = "Copyright 2014, AirFire, PNW, USFS"
 
 import json
+import logging
 import os
 from collections import defaultdict
 
@@ -17,17 +18,37 @@ __all__ = [
     'FccsLookUp'
 ]
 
-FUEL_LOAD_NC = os.path.dirname(__file__) + '/data/fccs_fuelload.nc'
-AK_FUEL_LOAD_NC = os.path.dirname(__file__) + '/data/FCCS_Alaska.nc'
+FUEL_LOAD_NCS = {
+    'fccs1': {
+        'file': os.path.dirname(__file__) + '/data/fccs_fuelload.nc',
+        'param': 'FCCS_FuelLoading'
+    },
+    'fccs2': {
+        'file': os.path.dirname(__file__) + '/data/fccs2_fuelload.nc',
+        'param': 'Band1'
+    },
+    'ak': {
+        'file': os.path.dirname(__file__) + '/data/FCCS_Alaska.nc',
+        'param': 'Band1'
+    }
+}
+
 
 class FccsLookUp(object):
 
     def __init__(self, **options):
-        #self.fccs_grid = FccsGrid(**options)
-        filename = options.get('fccs_fuelload_file')
-        if not filename:
-             filename = AK_FUEL_LOAD_NC if options.get('is_alaska') else FUEL_LOAD_NC
-        self.gridfile_specifier = "NETCDF:%s:FCCS_FuelLoading" % (filename)
+
+        # TODO: determine which combinations of file/param/version can be
+        # specified and raise errors when appropriate
+
+        is_alaska = options.get('is_alaska', False)
+        fccs_version = options.get('fccs_version', 2)
+        fuel_load_key = 'ak' if is_alaska else 'fccs%s'%(fccs_version)
+        logging.debug('fuel load key: %s', fuel_load_key)
+
+        self.filename = options.get('fccs_fuelload_file') or FUEL_LOAD_NCS[fuel_load_key]['file']
+        self.param = options.get('fccs_fuelload_param') or FUEL_LOAD_NCS[fuel_load_key]['param']
+        self.gridfile_specifier = "NETCDF:%s:%s" % (self.filename, self.param)
         self._initialize_projector()
     ##
     ## Public Interface
@@ -85,8 +106,7 @@ class FccsLookUp(object):
         self.gridfile = gdal.Open(self.gridfile_specifier)
         metadata = self.gridfile.GetMetadata()
 
-        if (metadata.has_key('FCCS_FuelLoading#grid_mapping')
-                and metadata['FCCS_FuelLoading#grid_mapping'] == 'lambert_conformal_conic':
+        if metadata['%s#grid_mapping' % (self.param)] == 'lambert_conformal_conic':
             self.projector = Proj(
                 proj='lcc',
                 #datum='NAD83', # TODO: read this self.gridfile
@@ -97,7 +117,7 @@ class FccsLookUp(object):
             )
         else:
             raise ValueError("Grid mapping projection not supported: %s" % (
-                metadata['FCCS_FuelLoading#grid_mapping']
+                metadata['%s#grid_mapping' % (self.param)]
             ))
 
 

@@ -108,6 +108,12 @@ OPTIONAL_OPTIONS = [
         'help': "Use Alaska-specific NetCDF file (only if '-f' isn't specified)",
         'action': "store_true",
         'default': False
+    },
+    {
+        'short': '-v',
+        'long': '--fccs-version',
+        'help': "Version of FCCS NetCDF file",
+        'default': '2'
     }
 ]
 
