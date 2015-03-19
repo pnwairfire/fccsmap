@@ -37,12 +37,20 @@ FUEL_LOAD_NCS = {
 class FccsLookUp(object):
 
     def __init__(self, **options):
+        """Constructor
+
+        Valid options:
+         - is_alaska -- Whether or not location is in Alaska; boolean
+         - fccs_version -- '1' or '2'
+         - fccs_fuelload_file -- NetCDF file containing FCCS lookup map
+         - fccs_fuelload_param -- name of variable in NetCDF file
+        """
 
         # TODO: determine which combinations of file/param/version can be
         # specified and raise errors when appropriate
 
         is_alaska = options.get('is_alaska', False)
-        fccs_version = options.get('fccs_version', 2)
+        fccs_version = options.get('fccs_version') or '2'
         fuel_load_key = 'ak' if is_alaska else 'fccs%s'%(fccs_version)
         logging.debug('fuel load key: %s', fuel_load_key)
 
@@ -98,6 +106,26 @@ class FccsLookUp(object):
             add_stats={'counts':counts})
         return self._compute_percentages(stats)
 
+    def look_up_by_lat_lng(self, lat, lng):
+        return self.look_up({
+            "type": "Point",
+            "coordinates": [lng, lat]
+        })
+
+    def look_up_by_lat_lng_range(self, s_lat, n_lat, w_lng, e_lng):
+        return self.look_up({
+            "type": "Polygon",
+            "coordinates": [
+                [
+                    [w_lng, s_lat],
+                    [w_lng, n_lat],
+                    [e_lng, n_lat],
+                    [e_lng, s_lat],
+                    [w_lng, s_lat]
+                ]
+            ]
+        })
+
     ##
     ## Helper methods
     ##
@@ -105,15 +133,24 @@ class FccsLookUp(object):
     def _initialize_projector(self):
         self.gridfile = gdal.Open(self.gridfile_specifier)
         metadata = self.gridfile.GetMetadata()
+        proj_type = metadata['%s#grid_mapping' % (self.param)]
 
-        if metadata['%s#grid_mapping' % (self.param)] == 'lambert_conformal_conic':
+        if proj_type == 'lambert_conformal_conic':
             self.projector = Proj(
                 proj='lcc',
                 #datum='NAD83', # TODO: read this self.gridfile
-                lat_0=metadata['lambert_conformal_conic#latitude_of_projection_origin'],
-                lat_1=metadata['lambert_conformal_conic#standard_parallel_1'],
-                lat_2=metadata['lambert_conformal_conic#standard_parallel_2'],
-                lon_0=metadata['lambert_conformal_conic#central_meridian']
+                lat_0=metadata['#'.join([proj_type,'latitude_of_projection_origin'])],
+                lat_1=metadata['#'.join([proj_type,'standard_parallel_1'])],
+                lat_2=metadata['#'.join([proj_type,'standard_parallel_2'])],
+                lon_0=metadata['#'.join([proj_type,'central_meridian'])]
+            )
+        elif proj_type == 'albers_conical_equal_area':
+            self.projector = Proj(
+                proj='aea',
+                # TODO: origin lat ?
+                lat_1=metadata['#'.join([proj_type,'standard_parallel_1'])],
+                lat_2=metadata['#'.join([proj_type,'standard_parallel_2'])],
+                lon_0=metadata['#'.join([proj_type,'longitude_of_central_meridian'])]
             )
         else:
             raise ValueError("Grid mapping projection not supported: %s" % (
@@ -124,7 +161,7 @@ class FccsLookUp(object):
     def _compute_percentages(self, stats):
         total_counts = defaultdict(lambda: 0)
         for stat_set in stats:
-            for fccs_id, count in stat_set['counts'].items():
+            for fccs_id, count in stat_set.get('counts', {}).items():
                 total_counts[fccs_id] += count
         total = float(sum(total_counts.values()))
         return {str(k):float(v)/total for k,v in total_counts.items()}
