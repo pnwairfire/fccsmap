@@ -58,6 +58,7 @@ class FccsLookUp(object):
         self.param = options.get('fccs_fuelload_param') or FUEL_LOAD_NCS[fuel_load_key]['param']
         self.gridfile_specifier = "NETCDF:%s:%s" % (self.filename, self.param)
         self._initialize_projector()
+
     ##
     ## Public Interface
     ##
