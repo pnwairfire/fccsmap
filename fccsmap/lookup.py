@@ -105,8 +105,9 @@ class FccsLookUp(object):
 
         stats = zonal_stats(s, self.gridfile_specifier,
             add_stats={'counts':counts})
-        # TODO: make sure area units are correct and correctly translated
-        # to real geographical area
+        # TODO: make sure area units are correct and properly translated
+        # to real geographical area; read them from nc file
+        # TODO: read and include grid cell size from nc file
         final_stats = self._compute_percentages(stats)
         final_stats.update(area=s.area, units='m^2')
         return final_stats
@@ -187,6 +188,10 @@ class FccsLookUp(object):
                 total_counts[fccs_id] += count
         total = sum(total_counts.values())
         return {
-            'grid_cell_count': total,
-            'fuelbeds': {str(k): float(v)/float(total) for k,v in total_counts.items()}
+            'grid_cells': total,
+            'fuelbeds': {
+                str(k): {
+                    'percent': float(v)/float(total), 'grid_cells': v
+                } for k,v in total_counts.items()
+            }
         }
