@@ -171,18 +171,17 @@ class FccsLookUp(object):
                 lon_0=metadata['#'.join([proj_type,'central_meridian'])]
             )
         elif proj_type == 'albers_conical_equal_area':
-            self.projector = Proj(
-                proj='aea',
-                # TODO: origin lat ?
-                lat_1=metadata['#'.join([proj_type,'standard_parallel_1'])],
-                lat_2=metadata['#'.join([proj_type,'standard_parallel_2'])],
-                lon_0=metadata['#'.join([proj_type,'longitude_of_central_meridian'])]
-            )
+            lat_1 = float(metadata['#'.join([proj_type,'standard_parallel_1'])])
+            lat_2 = float(metadata['#'.join([proj_type,'standard_parallel_2'])])
+            # TODO: I'm not sure what lat_0 should be
+            lat_0 = (lat_1 + lat_2) / 2.0
+            lon_0 = metadata['#'.join([proj_type,'longitude_of_central_meridian'])]
+            self.projector = Proj(proj='aea', lat_0=lat_0, lat_1=lat_1,
+                lat_2=lat_2, lon_0=lon_0)
         else:
             raise ValueError("Grid mapping projection not supported: %s" % (
                 metadata['%s#grid_mapping' % (self.param)]
             ))
-
 
     def _compute_percentages(self, stats):
         total_counts = defaultdict(lambda: 0)
