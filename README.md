@@ -59,9 +59,9 @@ First, install pip:
 
     sudo apt-get install python-pip
 
-Then, to install, for example, v0.1.0, use the following:
+Then, to install, for example, v0.1.1, use the following:
 
-    sudo pip install git+https://github.com/pnwairfire/fccsmap@v0.1.0
+    sudo pip install git+https://github.com/pnwairfire/fccsmap@v0.1.1
 
 If you get an error like    ```AttributeError: 'NoneType' object has no attribute 'skip_requirements_regex```, it means you need in upgrade pip.  One way to do so is with the following:
 
@@ -75,4 +75,80 @@ TODO: fill this in
 
 ### Using the Executables
 
-TODO: fill this in
+#### fccsmap
+
+```fccsmap``` returns fuelbed information by geographical location or region.
+To see it's options, use the '-h' option:
+
+    $ fccsmap -h
+
+##### Examples
+
+Here's an example that looks up the fuelbeds around Snoqualmie pass
+
+    $ fccsmap --log-level=DEBUG -g '{
+          "type": "MultiPolygon",
+          "coordinates": [
+            [
+              [
+                [-121.4522115, 47.4316976],
+                [-121.3990506, 47.4316976],
+                [-121.3990506, 47.4099293],
+                [-121.4522115, 47.4099293],
+                [-121.4522115, 47.4316976]
+              ]
+            ]
+          ]
+        }'
+
+This one looks up fuelbeds in WA state
+
+    $ fccsmap --log-level=DEBUG -g '{
+          "type": "MultiPolygon",
+          "coordinates": [
+              [
+                  [
+                      [-125.0, 49.0],
+                      [-117.0, 49.0],
+                      [-117.0, 45.0],
+                      [-125.0, 45.0],
+                      [-125.0, 49.0]
+                  ]
+              ]
+          ]
+        }'
+
+This is the same query, but using '-l'/'--lat-lng' option:
+
+    $ fccsmap --log-level=DEBUG -l 45.0:49.0,-125.0:-117.0
+
+Here's one that looks up fuelbeds under too polygon regions
+
+ $ fccsmap --log-level=DEBUG -g '{
+      "type": "MultiPolygon",
+      "coordinates": [
+        [
+          [
+            [-121.4522115, 47.4316976],
+            [-121.3990506, 47.4316976],
+            [-121.3990506, 47.4099293],
+            [-121.4522115, 47.4099293],
+            [-121.4522115, 47.4316976]
+          ]
+        ],
+        [
+          [
+            [-120.4522115, 47.4316976],
+            [-120.3990506, 47.4316976],
+            [-120.3990506, 47.4099293],
+            [-120.4522115, 47.4099293],
+            [-120.4522115, 47.4316976]
+          ]
+        ]
+      ]
+    }'
+
+Here's an example that looks up the fuelbed information at a specific
+location
+
+ $ fccsmap --log-level=DEBUG -l 47.0,-121.0
