@@ -108,12 +108,30 @@ class FccsLookUp(object):
         return self._compute_percentages(stats)
 
     def look_up_by_lat_lng(self, lat, lng):
+        """Looks up FCCS fuelbed information at lat/lng
+
+        Arguments
+         - lat -- latitude of location
+         - lng -- latitude of location
+        """
+
         return self.look_up({
             "type": "Point",
             "coordinates": [lng, lat]
         })
 
     def look_up_by_lat_lng_range(self, s_lat, n_lat, w_lng, e_lng):
+        """Looks up FCCS fuelbed information with region defined lat/lng ranges
+
+        Arguments
+         - s_lat -- south latitude boundary of region
+         - n_lat -- north latitude boundary of region
+         - w_lng -- west longitude boundary of region
+         - e_lng -- east longitude boundary of region
+
+        TODO: Make sure this correctly handles case where region crosses
+        international date line (i.e. w_lng > e_lng).
+        """
         return self.look_up({
             "type": "Polygon",
             "coordinates": [
