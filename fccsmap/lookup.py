@@ -191,7 +191,7 @@ class FccsLookUp(object):
             'grid_cells': total,
             'fuelbeds': {
                 str(k): {
-                    'percent': float(v)/float(total), 'grid_cells': v
+                    'percent': 100.0 * float(v)/float(total), 'grid_cells': v
                 } for k,v in total_counts.items()
             }
         }
