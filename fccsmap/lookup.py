@@ -105,14 +105,11 @@ class FccsLookUp(object):
 
         stats = zonal_stats(s, self.gridfile_specifier,
             add_stats={'counts':counts})
-        return {
-            # TODO: figure out area units and include in return dict; it must
-            # depend on the projection; it might not be convertable to real
-            # geographical area
-            'area': s.area,
-            'units': 'm^2' # <- TEMP - this is a guess
-            'fuelbeds': self._compute_percentages(stats)
-        }
+        # TODO: make sure area units are correct and correctly translated
+        # to real geographical area
+        final_stats = self._compute_percentages(stats)
+        final_stats.update(area=s.area, units='m^2')
+        return final_stats
 
     def look_up_by_lat_lng(self, lat, lng):
         """Looks up FCCS fuelbed information at lat/lng
@@ -188,5 +185,8 @@ class FccsLookUp(object):
         for stat_set in stats:
             for fccs_id, count in stat_set.get('counts', {}).items():
                 total_counts[fccs_id] += count
-        total = float(sum(total_counts.values()))
-        return {str(k):float(v)/total for k,v in total_counts.items()}
+        total = sum(total_counts.values())
+        return {
+            'grid_cell_count': total,
+            'fuelbeds': {str(k): float(v)/float(total) for k,v in total_counts.items()}
+        }
