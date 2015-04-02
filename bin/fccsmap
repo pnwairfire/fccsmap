@@ -16,7 +16,14 @@ from optparse import OptionParser
 
 from pyairfire import scripting as scripting
 
-from fccsmap.lookup import FccsLookUp
+try:
+    from fccsmap.lookup import FccsLookUp
+except:
+    import os
+    root_dir = os.path.abspath(os.path.join(sys.path[0], '../'))
+    sys.path.insert(0, root_dir)
+    from fccsmap.lookup import FccsLookUp
+
 
 OPTIONAL_OPTIONS = [
     {
