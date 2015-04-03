@@ -112,13 +112,19 @@ class FccsLookUp(object):
         final_stats.update(area=s.area, units='m^2')
         return final_stats
 
-    def look_up_by_lat_lng(self, lat, lng):
+    def look_up_by_lat_lng(self, lat, lng, area=None):
         """Looks up FCCS fuelbed information at lat/lng
 
         Arguments
          - lat -- latitude of location
          - lng -- latitude of location
+
+        Optional Arguments
+         - area -- if specified, a circular area around the lat/lng is considered
         """
+        # TODO: if area is specified, add buffer around point
+        if area:
+            raise NotImplementedError("Lat/lng + area not yet supported")
 
         return self.look_up({
             "type": "Point",
