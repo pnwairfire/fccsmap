@@ -1,6 +1,1 @@
-git+https://github.com/pnwairfire/pyairfire@v0.6.14
-gdal==1.11.2
-numpy==1.8.0
-shapely==1.5.7
-pyproj==1.9.4
-rasterstats==0.6.2
+-e .
