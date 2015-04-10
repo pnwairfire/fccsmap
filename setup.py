@@ -31,7 +31,7 @@ setup(
     url='https://github.com/pnwairfire/fccsmap/',
     description='.',
     install_requires=[
-        "pyairfire",
+        "pyairfire==0.6.14",
         "gdal==1.11.2",
         "numpy==1.8.0",
         "shapely==1.5.7",
@@ -39,7 +39,7 @@ setup(
         "rasterstats==0.6.2"
     ],
     dependency_links=[
-    "https://github.com/pnwairfire/pyairfire/archive/v0.6.14.zip#egg=pyairfire-0.6.14"
+        "http://pypi.smoke.airfire.org/simple/pyairfire/"
     ],
     tests_require=test_requirements
 )
