@@ -31,7 +31,7 @@ setup(
     url='https://github.com/pnwairfire/fccsmap/',
     description='.',
     install_requires=[
-        "pyairfire==0.6.14",
+        "pyairfire>=0.7.0",
         "gdal==1.11.2",
         "numpy==1.8.0",
         "shapely==1.5.7",

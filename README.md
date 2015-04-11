@@ -72,13 +72,14 @@ First install the non-python dependencies (mentioned above).
 
 ### Installing With pip
 
-First, install pip:
+First, install pip (with sudo if necessary):
 
-    sudo apt-get install python-pip
+    apt-get install python-pip
 
-Then, to install, for example, v0.1.6, use the following:
+Then, to install, for example, version 0.1.6, use the following (with
+sudo if necessary):
 
-    sudo pip install git+https://github.com/pnwairfire/fccsmap@v0.1.6
+    pip install --trusted-host pypi.smoke.airfire.org -i http://pypi.smoke.airfire.org/simple fccsmap==0.1.6
 
 If you get an error like    ```AttributeError: 'NoneType' object has no attribute 'skip_requirements_regex```, it means you need in upgrade pip.  One way to do so is with the following:
 
