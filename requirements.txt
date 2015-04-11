@@ -1,2 +1,2 @@
--i --trusted-host http://pypi.smoke.airfire.org/simple/
+-i http://pypi.smoke.airfire.org/simple/
 -e .
