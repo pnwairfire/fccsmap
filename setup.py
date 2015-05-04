@@ -1,4 +1,3 @@
-import re
 from setuptools import setup, find_packages
 
 from fccsmap import __version__
