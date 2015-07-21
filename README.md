@@ -41,12 +41,46 @@ or http:
 After installing the non-python dependencies (mentioned above), run the
 following to install required python packages:
 
-    pip install -r requirements.txt
+    pip install --no-binary gdal -r requirements.txt
 
 Run the following to install packages required for development and testing:
 
     pip install -r requirements-test.txt
     pip install -r requirements-dev.txt
+
+#### Notes
+
+##### pip issues
+
+If you get an error like    ```AttributeError: 'NoneType' object has no
+attribute 'skip_requirements_regex```, it means you need in upgrade
+pip. One way to do so is with the following:
+
+    pip install --upgrade pip
+
+##### gdal issues
+
+If, when you use fccsmap, you get the following error:
+
+    *** Error: No module named _gdal_array
+
+it's because your osgeo package (/path/to/site-packages/osgeo/) is
+missing _gdal_array.so.  This happens when gdal is built on a
+machine that lacks numpy.  The ```--no-binary :all:``` in the pip
+install command, above, is meant to fix this issue.  If it doesn't work,
+try uninstalling the gdal package and then re-installing it individually
+with the ```--no-binary``` option to pip:
+
+    pip uninstall -y GDAL
+    pip install --no-binary :all: gdal==1.11.2
+
+If this doesn't work, uninstall gdal, and then install it manually:
+
+    pip uninstall -y GDAL
+    wget https://pypi.python.org/packages/source/G/GDAL/GDAL-1.11.2.tar.gz
+    tar xzf GDAL-1.11.2.tar.gz
+    cd GDAL-1.11.2
+    python setup.py install
 
 ### Setup Environment
 
@@ -79,11 +113,10 @@ First, install pip (with sudo if necessary):
 Then, to install, for example, version 0.1.6, use the following (with
 sudo if necessary):
 
-    pip install --trusted-host pypi.smoke.airfire.org -i http://pypi.smoke.airfire.org/simple fccsmap==0.1.6
+    pip install --no-binary gdal --trusted-host pypi.smoke.airfire.org -i http://pypi.smoke.airfire.org/simple fccsmap==0.1.6
 
-If you get an error like    ```AttributeError: 'NoneType' object has no attribute 'skip_requirements_regex```, it means you need in upgrade pip.  One way to do so is with the following:
-
-    pip install --upgrade pip
+See the Development > Install Dependencies > Notes section, above, for
+notes on resolving pip and gdal issues.
 
 ## Usage:
 
