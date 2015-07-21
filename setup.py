@@ -31,8 +31,8 @@ setup(
     description='.',
     install_requires=[
         "pyairfire>=0.7.0",
-        "gdal==1.11.2",
         "numpy==1.8.0",
+        "gdal==1.11.2",
         "shapely==1.5.7",
         "pyproj==1.9.4",
         "rasterstats==0.6.2"
