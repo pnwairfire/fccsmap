@@ -41,7 +41,7 @@ or http:
 After installing the non-python dependencies (mentioned above), run the
 following to install required python packages:
 
-    pip install --no-binary gdal -r requirements.txt
+    pip install --no-binary gdal --trusted-host pypi.smoke.airfire.org -r requirements.txt
 
 Run the following to install packages required for development and testing:
 
