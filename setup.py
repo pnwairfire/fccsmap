@@ -28,7 +28,7 @@ setup(
         "Operating System :: MacOS"
     ],
     url='https://github.com/pnwairfire/fccsmap/',
-    description='.',
+    description='supports the look-up of FCCS fuelbed information by lat/lng or vector geo spatial data.',
     install_requires=[
         "pyairfire>=0.7.0",
         "numpy==1.8.0",
