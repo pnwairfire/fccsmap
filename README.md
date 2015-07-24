@@ -6,9 +6,13 @@ vector geo spatial data.
 ## Non-python Dependencies
 
 Whether cloning the repo or installing with pip, you'll first need to
-manually install gdal, proj, and netcdf, which fccsmap depends on.
+manually install gdal, proj, and netcdf, which fccsmap depends on.  These
+instructions assume you already have python and pip installed, as well as
+C and C++ compilers, etc.
 
-On a mac, you can do so with [Homebrew](http://brew.sh/):
+### Mac
+
+On a mac, using [Homebrew](http://brew.sh/):
 
     brew install homebrew/science/netcdf
     brew install proj
@@ -17,12 +21,37 @@ On a mac, you can do so with [Homebrew](http://brew.sh/):
 Note that the '--with-netcdf' option is required to build gdal with the
 netCDF driver. See http://trac.osgeo.org/gdal/wiki/NetCDF for more information.
 
-On ubuntu, the following should be sufficient:
+### Ubuntu
 
-    sudo apt-get install libnetcdf-dev
-    sudo apt-get install proj
-    sudo apt-get install python-gdal
-    sudo apt-get install libgdal1-1.7.0
+First update
+
+    sudo apt-get update
+    sudo apt-get upgrade
+
+If you don't have python and pip installed:
+
+    sudo apt-get install -y python
+    sudo apt-get install -y python-dev
+    sudo apt-get install -y python-pip
+    sudo pip install --upgrade pip
+
+Install libnetcdf and libproj
+
+    sudo apt-get install -y libnetcdf-dev
+    sudo apt-get install -y proj
+    sudo apt-get install -y proj-bin  # for ubuntu 14.04
+
+On ubuntu, you need to install numpy and gdal manually.
+
+    sudo pip install numpy==1.8.0
+    wget http://download.osgeo.org/gdal/1.11.2/gdal-1.11.2.tar.gz
+    tar xvfz gdal-1.11.2.tar.gz
+    cd gdal-1.11.2
+    ./configure --with-python --prefix=/usr
+    make
+    sudo make install
+    sudo ldconfig
+    sudo apt-get install -y python-gdal
 
 ## Development
 
@@ -36,17 +65,22 @@ or http:
 
     git clone https://github.com/pnwairfire/fccsmap.git
 
-### Install Dependencies@
+### Install Dependencies
+
+#### Main dependencies
 
 After installing the non-python dependencies (mentioned above), run the
 following to install required python packages:
 
     pip install --no-binary gdal --trusted-host pypi.smoke.airfire.org -r requirements.txt
 
+#### Dev and test dependencies
+
 Run the following to install packages required for development and testing:
 
     pip install -r requirements-test.txt
     pip install -r requirements-dev.txt
+
 
 #### Notes
 
