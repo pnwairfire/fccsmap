@@ -1,4 +1,15 @@
-"""lookup.py:
+"""fccsmap.lookup
+
+For debugging purposes, you can inspect the fccs NetCDF files directly
+with ferret. See http://ferret.pmel.noaa.gov/Ferret/ to obtain it.
+Tutorial: http://ferret.pmel.noaa.gov/Ferret/documentation/ferret-tutorial.
+Very simple usage:
+
+  $ cd /path/to/fccsmap/repo/fccsmap/data/
+  $ ferret
+  yes? use fccs2_fuelload.nc
+  yes? set mem/size=200
+  yes? shade/level=(0,900,10) band1
 """
 
 __author__      = "Joel Dubowy"
