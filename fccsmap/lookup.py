@@ -131,16 +131,19 @@ class FccsLookUp(object):
          - lng -- latitude of location
 
         Optional Arguments
-         - area -- if specified, a circular area around the lat/lng is considered
+         - area -- area in m^2;  if specified, a circular area around the
+           lat/lng is considered
         """
         # TODO: if area is specified, add buffer around point
         if area:
             raise NotImplementedError("Lat/lng + area not yet supported")
+        else:
+            geo_data = {
+                "type": "Point",
+                "coordinates": [lng, lat]
+            }
 
-        return self.look_up({
-            "type": "Point",
-            "coordinates": [lng, lat]
-        })
+        return self.look_up(geo_data)
 
     def look_up_by_lat_lng_range(self, s_lat, n_lat, w_lng, e_lng):
         """Looks up FCCS fuelbed information with region defined lat/lng ranges
