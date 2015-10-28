@@ -209,7 +209,7 @@ This is the same query, but using '-l'/'--lat-lng' option:
 
 Here's one that looks up fuelbeds under too polygon regions
 
- $ fccsmap --log-level=DEBUG -g '{
+    $ fccsmap --log-level=DEBUG -g '{
       "type": "MultiPolygon",
       "coordinates": [
         [
