@@ -18,6 +18,7 @@ __copyright__   = "Copyright 2014, AirFire, PNW, USFS"
 import json
 import logging
 import os
+import re
 from collections import defaultdict
 
 from osgeo import gdal
@@ -174,6 +175,8 @@ class FccsLookUp(object):
     ## Helper methods
     ##
 
+    LAT_0_EXTRACTOR = re.compile('PARAMETER\["latitude_of_center",([^]]+)\]')
+
     def _initialize_projector(self):
         self.gridfile = gdal.Open(self.gridfile_specifier)
         metadata = self.gridfile.GetMetadata()
@@ -189,13 +192,34 @@ class FccsLookUp(object):
                 lon_0=metadata['#'.join([proj_type,'central_meridian'])]
             )
         elif proj_type == 'albers_conical_equal_area':
+            # Parameters to set:
+            #  - proj -- 'aea'
+            #  - lat_1 -- Latitude of first standard parallel
+            #  - lat_2 -- Latitude of second standard parallel
+            #  - lat_0 -- Latitude of false origin
+            #  - lon_0 -- Longitude of false origin
+            #  - x_0 -- Easting of false origin
+            #  - y_0 -- Northing of false origin
+
             lat_1 = float(metadata['#'.join([proj_type,'standard_parallel_1'])])
             lat_2 = float(metadata['#'.join([proj_type,'standard_parallel_2'])])
-            # TODO: I'm not sure what lat_0 should be
-            lat_0 = (lat_1 + lat_2) / 2.0
-            lon_0 = metadata['#'.join([proj_type,'longitude_of_central_meridian'])]
-            self.projector = Proj(proj='aea', lat_0=lat_0, lat_1=lat_1,
-                lat_2=lat_2, lon_0=lon_0)
+
+            # To get the lat_0 parameter, we need to extract it from the
+            # 'spatial_ref' metadata field; it looks something like this:
+            #   'PROJCS["NAD_1983_Albers",GEOGCS["NAD83",DATUM["North_American_Datum_1983",SPHEROID["GRS 1980",6378137,298.2572221010002,AUTHORITY["EPSG","7019"]],AUTHORITY["EPSG","6269"]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433],AUTHORITY["EPSG","4269"]],PROJECTION["Albers_Conic_Equal_Area"],PARAMETER["standard_parallel_1",29.5],PARAMETER["standard_parallel_2",45.5],PARAMETER["latitude_of_center",23],PARAMETER["longitude_of_center",-96],PARAMETER["false_easting",0],PARAMETER["false_northing",0],UNIT["metre",1,AUTHORITY["EPSG","9001"]]]'
+            # This is a bit hacky, but it works
+            spacial_ref = metadata['#'.join([proj_type,'spatial_ref'])]
+            m = self.LAT_0_EXTRACTOR.search(spacial_ref)
+            if not m:
+                raise RuntimeError("Failed to determine latitude of false origin")
+            lat_0 = float(m.group(1))
+            lon_0 = float(metadata['#'.join([proj_type,'longitude_of_central_meridian'])])
+
+            x_0 = int(metadata['#'.join([proj_type, 'false_easting'])])
+            y_0 = int(metadata['#'.join([proj_type, 'false_northing'])])
+
+            self.projector = Proj(proj='aea', lat_1=lat_1, lat_2=lat_2,
+                lat_0=lat_0, lon_0=lon_0, x_0=x_0, y_0=y_0)
         else:
             raise ValueError("Grid mapping projection not supported: %s" % (
                 metadata['%s#grid_mapping' % (self.param)]
