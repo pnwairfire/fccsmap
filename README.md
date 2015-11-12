@@ -52,6 +52,8 @@ On ubuntu, you need to install numpy and gdal manually.
     sudo make install
     sudo ldconfig
 
+If you have trouble building gdal version 1.11.2, try 1.11.3.
+
 ## Development
 
 ### Clone Repo
@@ -91,7 +93,7 @@ pip. One way to do so is with the following:
 
     pip install --upgrade pip
 
-##### gdal issues
+##### python gdal issues
 
 If, when you use fccsmap, you get the following error:
 
