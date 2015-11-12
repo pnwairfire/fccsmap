@@ -51,7 +51,6 @@ On ubuntu, you need to install numpy and gdal manually.
     make
     sudo make install
     sudo ldconfig
-    sudo apt-get install -y python-gdal
 
 ## Development
 
@@ -115,6 +114,12 @@ If this doesn't work, uninstall gdal, and then install it manually:
     tar xzf GDAL-1.11.2.tar.gz
     cd GDAL-1.11.2
     python setup.py install
+
+Links:
+
+ - http://trac.osgeo.org/gdal/wiki/DownloadSource
+ - http://gis.stackexchange.com/questions/28966/python-gdal-package-missing-header-file-when-installing-via-pip
+ - [pygdal](https://github.com/dezhin/pygdal)
 
 ### Setup Environment
 
