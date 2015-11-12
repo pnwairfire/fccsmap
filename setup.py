@@ -30,8 +30,9 @@ setup(
     url='https://github.com/pnwairfire/fccsmap/',
     description='supports the look-up of FCCS fuelbed information by lat/lng or vector geo spatial data.',
     install_requires=[
-        "pyairfire>=0.7.0",
+        "pyairfire>=0.8.22",
         "numpy==1.8.0",
+        #"pygdal==1.11.2.1",
         "gdal==1.11.2",
         "shapely==1.5.7",
         "pyproj==1.9.4",
