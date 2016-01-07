@@ -3,7 +3,7 @@
 This package supports the look-up of FCCS fuelbed information by lat/lng or
 vector geo spatial data.
 
-## Non-python Dependencies
+## Dependencies
 
 Whether cloning the repo or installing with pip, you'll first need to
 manually install gdal, proj, and netcdf, which fccsmap depends on.  These
@@ -21,38 +21,46 @@ On a mac, using [Homebrew](http://brew.sh/):
 Note that the '--with-netcdf' option is required to build gdal with the
 netCDF driver. See http://trac.osgeo.org/gdal/wiki/NetCDF for more information.
 
-### Ubuntu
+Additionally, you'll need the gdal python bindings.  These used to be
+baked into setup.py, but the version available for install depends
+on your platform.
+
+    gdal-config --version
+    pip install gdal==`gdal-config --version`
+
+### Ubuntu, 12.04 LTS (precise )
 
 First update
 
     sudo apt-get update
-    sudo apt-get upgrade
+    #sudo apt-get upgrade
 
 If you don't have python and pip installed:
 
-    sudo apt-get install -y python
-    sudo apt-get install -y python-dev
-    sudo apt-get install -y python-pip
+    sudo apt-get install -y python python-dev python-pip
     sudo pip install --upgrade pip
 
 Install libnetcdf and libproj
 
-    sudo apt-get install -y libnetcdf-dev
-    sudo apt-get install -y proj
-    sudo apt-get install -y proj-bin  # for ubuntu 14.04
+    sudo apt-get install -y libnetcdf-dev proj
 
-On ubuntu, you need to install numpy and gdal manually.
+Install numpy and gdal.
 
     sudo pip install numpy==1.8.0
-    wget http://download.osgeo.org/gdal/1.11.2/gdal-1.11.2.tar.gz
-    tar xvfz gdal-1.11.2.tar.gz
-    cd gdal-1.11.2
-    ./configure --with-python --prefix=/usr
-    make
-    sudo make install
-    sudo ldconfig
+    sudo apt-get install -y libgdal1-1.7.0
+    sudo pip install gdal==1.7.0
 
-If you have trouble building gdal version 1.11.2, try 1.11.3.
+On ubuntu, you may need to install gdal manually
+
+    sudo apt-get install checkinstall
+    cd /usr/local/src
+    sudo wget http://download.osgeo.org/gdal/gdal-1.7.3.tar.gz
+    sudo tar xvfz gdal-1.7.3.tar.gz
+    cd gdal-1.7.3
+    sudo ./configure --with-python --prefix=/usr/local
+    sudo make
+    sudo checkinstall  #sudo make install
+    sudo ldconfig
 
 ## Development
 
@@ -66,7 +74,7 @@ or http:
 
     git clone https://github.com/pnwairfire/fccsmap.git
 
-### Install Dependencies
+### Install Python Dependencies
 
 #### Main dependencies
 

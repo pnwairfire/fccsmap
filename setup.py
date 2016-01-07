@@ -33,7 +33,7 @@ setup(
         "pyairfire>=0.8.22",
         "numpy==1.8.0",
         #"pygdal==1.11.2.1",
-        "gdal==1.11.2",
+        #"gdal==1.7.3",
         "shapely==1.5.7",
         "pyproj==1.9.4",
         "rasterstats==0.6.2"
