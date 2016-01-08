@@ -277,6 +277,9 @@ Set env vars so that your docker knows how to find the docker host:
 
 ### Build Bluesky Docker Image from Docfile
 
+Cd into the fccsmap repo's docker/ subdirectory and build the image:
+
+    cd /path/to/fccsmap/repo/docker/
     docker build -t fccsmap .
 
 ### Run in Docker
