@@ -246,16 +246,18 @@ location
 
 ## Docker
 
-### Installing Docker
+Two Dockerfiles are included in this repo - one for running fccsmap
+out of the box, and the other for use as a base environment for
+development.
+
+### Install Docker
 
 See https://docs.docker.com/engine/installation/ for platform specific
 installation instructions.
 
-### Building Docker Image
+### Start Docker
 
 #### Mac OSX
-
-##### Starting Docker deamon
 
 On a Mac, the docker daemon runs inside a Linux VM. The first time
 you use docker, you'll need to create a vm:
@@ -275,20 +277,40 @@ Set env vars so that your docker knows how to find the docker host:
 ...TODO: fill in insructions...
 
 
-### Build Bluesky Docker Image from Docfile
+### Build fccsmap Docker Images from Dockerfile
 
-Cd into the fccsmap repo's docker/ subdirectory and build the image:
+    cd /path/to/fccsmap/repo/
+    docker build -t fccsmap-base docker/base/
+    docker build -t fccsmap docker/complete/
 
-    cd /path/to/fccsmap/repo/docker/
-    docker build -t fccsmap .
-
-### Run in Docker
+### Run Complete Container
 
 If you run the image without a command, i.e.:
 
     docker run fccsmap
 
-it will output the fccsmap help image.  To fccsmap with input, use
+it will output the fccsmap help image.  To run fccsmap with input, use
 something like the following:
 
     docker run fccsmap fccsmap --log-level=DEBUG -l 45.0:49.0,-125.0:-117.0
+
+### Using base image for development
+
+The fccsmap-base image has everything except the fccsmap
+package and it's python dependencies.  You can use it to run fccsmap
+from your local repo. First install the python dependencies for your
+current version of the repo
+
+    docker run --name fccsmap-base \
+        -v /path/to/fccsmap/repo/:/fccsmap/ -w /fccsmap/ \
+        fccsmap-base pip install --no-binary gdal \
+        --trusted-host pypi.smoke.airfire.org -r requirements.txt
+
+then commit container changes back to image
+
+    docker commit fccsmap-base fccsmap-base
+
+Then run fccsmap:
+
+    docker run -v /path/to/fccsmap/repo/:/fccsmap/ -w /fccsmap/ fccsmap-base ./bin/fccsmap -h
+    docker run -v /path/to/fccsmap/repo/:/fccsmap/ -w /fccsmap/ fccsmap-base ./bin/fccsmap --log-level=DEBUG -l 45.0:49.0,-125.0:-11
