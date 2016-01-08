@@ -222,7 +222,7 @@ This is the same query, but using '-l'/'--lat-lng' option:
 
     $ fccsmap --log-level=DEBUG -l 45.0:49.0,-125.0:-117.0
 
-Here's one that looks up fuelbeds under too polygon regions
+Here's one that looks up fuelbeds under two polygon regions
 
     $ fccsmap --log-level=DEBUG -g '{
       "type": "MultiPolygon",
@@ -252,3 +252,49 @@ Here's an example that looks up the fuelbed information at a specific
 location
 
  $ fccsmap --log-level=DEBUG -l 47.0,-121.0
+
+## Docker
+
+### Installing Docker
+
+See https://docs.docker.com/engine/installation/ for platform specific
+installation instructions.
+
+### Building Docker Image
+
+#### Mac OSX
+
+##### Starting Docker deamon
+
+On a Mac, the docker daemon runs inside a Linux VM. The first time
+you use docker, you'll need to create a vm:
+
+    docker-machine create --driver virtualbox default
+
+Check that it was created:
+
+    docker-machine ls
+
+Set env vars so that your docker knows how to find the docker host:
+
+    eval "$(docker-machine env default)"
+
+#### Ubuntu
+
+...TODO: fill in insructions...
+
+
+### Build Bluesky Docker Image from Docfile
+
+    docker build -t fccsmap .
+
+### Run in Docker
+
+If you run the image without a command, i.e.:
+
+    docker run fccsmap
+
+it will output the fccsmap help image.  To fccsmap with input, use
+something like the following:
+
+    docker run fccsmap fccsmap --log-level=DEBUG -l 45.0:49.0,-125.0:-117.0
