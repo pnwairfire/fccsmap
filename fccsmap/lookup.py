@@ -215,8 +215,8 @@ class FccsLookUp(object):
             lat_0 = float(m.group(1))
             lon_0 = float(metadata['#'.join([proj_type,'longitude_of_central_meridian'])])
 
-            x_0 = int(metadata['#'.join([proj_type, 'false_easting'])])
-            y_0 = int(metadata['#'.join([proj_type, 'false_northing'])])
+            x_0 = int(float(metadata['#'.join([proj_type, 'false_easting'])]))
+            y_0 = int(float(metadata['#'.join([proj_type, 'false_northing'])]))
 
             self.projector = Proj(proj='aea', lat_1=lat_1, lat_2=lat_2,
                 lat_0=lat_0, lon_0=lon_0, x_0=x_0, y_0=y_0)
