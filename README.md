@@ -28,12 +28,11 @@ on your platform.
     gdal-config --version
     pip install gdal==`gdal-config --version`
 
-### Ubuntu, 12.04 LTS (precise )
+### Ubuntu, 12.04 LTS (precise)
 
 First update
 
     sudo apt-get update
-    #sudo apt-get upgrade
 
 If you don't have python and pip installed:
 
@@ -50,17 +49,9 @@ Install numpy and gdal.
     sudo apt-get install -y libgdal1-1.7.0
     sudo pip install gdal==1.7.0
 
-On ubuntu, you may need to install gdal manually
+Install xml libs:
 
-    sudo apt-get install checkinstall
-    cd /usr/local/src
-    sudo wget http://download.osgeo.org/gdal/gdal-1.7.3.tar.gz
-    sudo tar xvfz gdal-1.7.3.tar.gz
-    cd gdal-1.7.3
-    sudo ./configure --with-python --prefix=/usr/local
-    sudo make
-    sudo checkinstall  #sudo make install
-    sudo ldconfig
+    sudo apt-get install -y libxml2-dev libxslt1-dev
 
 ## Development
 
@@ -115,14 +106,14 @@ try uninstalling the gdal package and then re-installing it individually
 with the ```--no-binary``` option to pip:
 
     pip uninstall -y GDAL
-    pip install --no-binary :all: gdal==1.11.2
+    pip install --no-binary :all: gdal==<VERSION>
 
 If this doesn't work, uninstall gdal, and then install it manually:
 
     pip uninstall -y GDAL
-    wget https://pypi.python.org/packages/source/G/GDAL/GDAL-1.11.2.tar.gz
-    tar xzf GDAL-1.11.2.tar.gz
-    cd GDAL-1.11.2
+    wget https://pypi.python.org/packages/source/G/GDAL/GDAL-<VERSION>.tar.gz
+    tar xzf GDAL-<VERSION>.tar.gz
+    cd GDAL-<VERSION>
     python setup.py install
 
 Links:
