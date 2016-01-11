@@ -17,10 +17,25 @@ FROM ubuntu:12.04
 
 MAINTAINER Joel Dubowy
 
-RUN apt-get update
-RUN apt-get install -y g++ gcc make python python-dev python-pip libnetcdf-dev proj
-RUN pip install --upgrade pip
-RUN pip install numpy==1.8.0
-RUN apt-get install -y libgdal1-1.7.0
-#RUN pip install gdal==1.7.0
-RUN apt-get install -y python-gdal libxml2-dev libxslt1-dev
+# Install base dependencies
+RUN apt-get update \
+    && apt-get install -y \
+        g++ \
+        gcc \
+        make \
+        python \
+        python-dev \
+        python-pip \
+        libnetcdf-dev \
+        proj \
+    && pip install --upgrade pip
+
+# Install numpy and gdal
+# Note: numpy 1.8.0 needs to be installed before libgdal
+RUN pip install numpy==1.8.0 \
+    && apt-get install -y \
+        libgdal1-1.7.0 \
+    && apt-get install -y \
+        python-gdal \
+        libxml2-dev \
+        libxslt1-dev
