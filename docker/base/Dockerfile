@@ -26,16 +26,19 @@ RUN apt-get update \
         python \
         python-dev \
         python-pip \
+    && apt-get install -y \
         libnetcdf-dev \
         proj \
     && pip install --upgrade pip
 
 # Install numpy and gdal
 # Note: numpy 1.8.0 needs to be installed before libgdal
-RUN pip install numpy==1.8.0 \
+RUN pip install \
+        numpy==1.8.0 \
     && apt-get install -y \
         libgdal1-1.7.0 \
     && apt-get install -y \
         python-gdal \
+    && apt-get install -y \
         libxml2-dev \
         libxslt1-dev
