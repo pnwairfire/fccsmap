@@ -317,9 +317,21 @@ Then run fccsmap:
 
 ### Notes about using Docker
 
- - *Mounted volumes*: mounting directories outside of your home
+#### Mounted volumes
+
+Mounting directories outside of your home
 directory seems to result in the directories appearing empty in the
 docker container. Whether this is by design or not, you apparently need to
 mount directories under your home directory.  Sym links don't mount either, so
 you have to cp or mv directories under your home dir in order to mount them.
- -
+
+#### Cleanup
+
+Docker leaves behind partial images during the build process, and it leaves behind
+containers after they've been used.  To clean up, you can use the following:
+
+    # remove all stopped containers
+    docker ps -a | awk 'NR > 1 {print $1}' | xargs docker rm
+
+    # remove all untagged images:
+    docker images | grep "<none>" | awk '{print $3}' | xargs docker rmi
