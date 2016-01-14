@@ -302,7 +302,7 @@ from your local repo. First install the python dependencies for your
 current version of the repo
 
     docker run --name fccsmap-base \
-        -v /path/to/fccsmap/repo/:/fccsmap/ -w /fccsmap/ \
+        -v /home/foo/path/to/fccsmap/repo/:/fccsmap/ -w /fccsmap/ \
         fccsmap-base pip install --no-binary gdal \
         --trusted-host pypi.smoke.airfire.org -r requirements.txt
 
@@ -312,5 +312,14 @@ then commit container changes back to image
 
 Then run fccsmap:
 
-    docker run -v /path/to/fccsmap/repo/:/fccsmap/ -w /fccsmap/ fccsmap-base ./bin/fccsmap -h
-    docker run -v /path/to/fccsmap/repo/:/fccsmap/ -w /fccsmap/ fccsmap-base ./bin/fccsmap --log-level=DEBUG -l 45.0:49.0,-125.0:-11
+    docker run -v /home/foo/path/to/fccsmap/repo/:/fccsmap/ -w /fccsmap/ fccsmap-base ./bin/fccsmap -h
+    docker run -v /home/foo/path/to/fccsmap/repo/:/fccsmap/ -w /fccsmap/ fccsmap-base ./bin/fccsmap --log-level=DEBUG -l 45.0:49.0,-125.0:-11
+
+### Notes about using Docker
+
+ - *Mounted volumes*: mounting directories outside of your home
+directory seems to result in the directories appearing empty in the
+docker container. Whether this is by design or not, you apparently need to
+mount directories under your home directory.  Sym links don't mount either, so
+you have to cp or mv directories under your home dir in order to mount them.
+ -
