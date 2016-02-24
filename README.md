@@ -268,7 +268,12 @@ Check that it was created:
 
     docker-machine ls
 
-Set env vars so that your docker knows how to find the docker host:
+Subsequently, you'll need to start the vm with:
+
+    docker-machine start docker-default
+
+Once it's running, set env vars so that your docker knows how to find
+the docker host:
 
     eval "$(docker-machine env docker-default)"
 
@@ -282,6 +287,16 @@ Set env vars so that your docker knows how to find the docker host:
     cd /path/to/fccsmap/repo/
     docker build -t fccsmap-base docker/base/
     docker build -t fccsmap docker/complete/
+
+### Obtain pre-built docker images
+
+As an alternative to building the image yourself, you can use the pre-built
+complete image.
+
+    docker pull pnwairfire/fccsmap
+
+See the [fccsmap docker hub page](https://hub.docker.com/r/pnwairfire/fccsmap/)
+for more information.
 
 ### Run Complete Container
 
