@@ -12,7 +12,6 @@ import json
 import logging
 import sys
 import traceback
-from optparse import OptionParser
 
 from pyairfire import scripting as scripting
 
