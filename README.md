@@ -3,6 +3,10 @@
 This package supports the look-up of FCCS fuelbed information by lat/lng or
 vector geo spatial data.
 
+***This software is provided for research purposes only. It's output may
+not accurately reflect observed data due to numerous reasons. Data are
+provisional; use at own risk.***
+
 ## Dependencies
 
 Whether cloning the repo or installing with pip, you'll first need to
