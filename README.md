@@ -32,6 +32,9 @@ on your platform.
     gdal-config --version
     pip install gdal==`gdal-config --version`
 
+Note that another source for Open Source GIS packages is
+http://www.kyngchaos.com/software/unixport.
+
 ### Ubuntu, 12.04 LTS (precise)
 
 First update
