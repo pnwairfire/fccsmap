@@ -292,16 +292,6 @@ the docker host:
     docker build -t fccsmap-base docker/base/
     docker build -t fccsmap docker/complete/
 
-### Obtain pre-built docker images
-
-As an alternative to building the image yourself, you can use the pre-built
-complete image.
-
-    docker pull pnwairfire/fccsmap
-
-See the [fccsmap docker hub page](https://hub.docker.com/r/pnwairfire/fccsmap/)
-for more information.
-
 ### Run Complete Container
 
 If you run the image without a command, i.e.:
