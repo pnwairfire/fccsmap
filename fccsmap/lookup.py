@@ -13,7 +13,6 @@ Very simple usage:
 """
 
 __author__      = "Joel Dubowy"
-__copyright__   = "Copyright 2014, AirFire, PNW, USFS"
 
 import json
 import logging
