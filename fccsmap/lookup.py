@@ -106,8 +106,8 @@ class FccsLookUp(object):
 
         def counts(x):
             counts = defaultdict(lambda: 0)
-            for i in xrange(len(x.data)):
-                for j in xrange(len(x.data[i])):
+            for i in range(len(x.data)):
+                for j in range(len(x.data[i])):
                     if not x.mask[i][j]:
                         # Note: if x.data[i][j] < 0, it's up
                         # to calling code to deal with it
@@ -231,7 +231,7 @@ class FccsLookUp(object):
     def _compute_percentages(self, stats):
         total_counts = defaultdict(lambda: 0)
         for stat_set in stats:
-            for fccs_id, count in stat_set.get('counts', {}).items():
+            for fccs_id, count in list(stat_set.get('counts', {}).items()):
                 total_counts[fccs_id] += count
         total = sum(total_counts.values())
         return {
@@ -239,6 +239,6 @@ class FccsLookUp(object):
             'fuelbeds': {
                 str(k): {
                     'percent': 100.0 * float(v)/float(total), 'grid_cells': v
-                } for k,v in total_counts.items()
+                } for k,v in list(total_counts.items())
             }
         }

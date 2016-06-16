@@ -13,6 +13,7 @@ import sys
 import traceback
 
 from pyairfire import scripting as scripting
+from functools import reduce
 
 try:
     from fccsmap.lookup import FccsLookUp
@@ -104,7 +105,7 @@ def main():
             data = lookup.look_up(json.loads(options.geo_data))
         sys.stdout.write(json.dumps(data))
 
-    except Exception, e:
+    except Exception as e:
         if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
             scripting.utils.exit_with_msg(traceback.format_exc(), prefix="")
         else:
