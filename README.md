@@ -79,7 +79,7 @@ or http:
 After installing the non-python dependencies (mentioned above), run the
 following to install required python packages:
 
-    pip install --no-binary gdal --trusted-host pypi.smoke.airfire.org -r requirements.txt
+    pip install --trusted-host pypi.smoke.airfire.org -r requirements.txt
 
 #### Dev and test dependencies
 
@@ -250,100 +250,3 @@ Here's an example that looks up the fuelbed information at a specific
 location
 
  $ fccsmap --log-level=DEBUG -l 47.0,-121.0
-
-## Docker
-
-Two Dockerfiles are included in this repo - one for running fccsmap
-out of the box, and the other for use as a base environment for
-development.
-
-### Install Docker
-
-See https://docs.docker.com/engine/installation/ for platform specific
-installation instructions.
-
-### Start Docker
-
-#### Mac OSX
-
-On a Mac, the docker daemon runs inside a Linux VM. The first time
-you use docker, you'll need to create a vm:
-
-    docker-machine create --driver virtualbox docker-default
-
-Check that it was created:
-
-    docker-machine ls
-
-Subsequently, you'll need to start the vm with:
-
-    docker-machine start docker-default
-
-Once it's running, set env vars so that your docker knows how to find
-the docker host:
-
-    eval "$(docker-machine env docker-default)"
-
-#### Ubuntu
-
-...TODO: fill in insructions...
-
-
-### Build fccsmap Docker Images from Dockerfile
-
-    cd /path/to/fccsmap/repo/
-    docker build -t fccsmap-base docker/base/
-    docker build -t fccsmap docker/complete/
-
-### Run Complete Container
-
-If you run the image without a command, i.e.:
-
-    docker run fccsmap
-
-it will output the fccsmap help image.  To run fccsmap with input, use
-something like the following:
-
-    docker run fccsmap fccsmap --log-level=DEBUG -l 45.0:49.0,-125.0:-117.0
-
-### Using base image for development
-
-The fccsmap-base image has everything except the fccsmap
-package and it's python dependencies.  You can use it to run fccsmap
-from your local repo. First install the python dependencies for your
-current version of the repo
-
-    docker run --name fccsmap-base \
-        -v /home/foo/path/to/fccsmap/repo/:/fccsmap/ -w /fccsmap/ \
-        fccsmap-base pip install --no-binary gdal \
-        --trusted-host pypi.smoke.airfire.org -r requirements.txt
-
-then commit container changes back to image
-
-    docker commit fccsmap-base fccsmap-base
-
-Then run fccsmap:
-
-    docker run -v /home/foo/path/to/fccsmap/repo/:/fccsmap/ -w /fccsmap/ fccsmap-base ./bin/fccsmap -h
-    docker run -v /home/foo/path/to/fccsmap/repo/:/fccsmap/ -w /fccsmap/ fccsmap-base ./bin/fccsmap --log-level=DEBUG -l 45.0:49.0,-125.0:-11
-
-### Notes about using Docker
-
-#### Mounted volumes
-
-Mounting directories outside of your home
-directory seems to result in the directories appearing empty in the
-docker container. Whether this is by design or not, you apparently need to
-mount directories under your home directory.  Sym links don't mount either, so
-you have to cp or mv directories under your home dir in order to mount them.
-
-#### Cleanup
-
-Docker leaves behind partial images during the build process, and it leaves behind
-containers after they've been used.  To clean up, you can use the following:
-
-    # remove all stopped containers
-    docker ps -a | awk 'NR > 1 {print $1}' | xargs docker rm
-
-    # remove all untagged images:
-    docker images | grep "<none>" | awk '{print $3}' | xargs docker rmi
