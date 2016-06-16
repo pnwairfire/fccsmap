@@ -35,9 +35,9 @@ setup(
         # Note: gdal must now be installed manually beforehand
         #"pygdal==1.11.2.1",
         #"gdal==1.11.2",
-        "shapely==1.5.16",
-        "pyproj==1.9.5.1",
-        "rasterstats==0.10.3"
+        "shapely==1.5.7",
+        "pyproj==1.9.4",
+        "rasterstats==0.6.2"
     ],
     dependency_links=[
         "https://pypi.smoke.airfire.org/simple/pyairfire/"
