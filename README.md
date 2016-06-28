@@ -31,7 +31,7 @@ On a mac, using [Homebrew](http://brew.sh/):
 Note that the '--with-netcdf' option is required to build gdal with the
 netCDF driver. See http://trac.osgeo.org/gdal/wiki/NetCDF for more information.
 
-Additionally, you'll need the gdal python bindings.  These used to be
+Additionally, you'll need numpy and gdal python bindings.  These used to be
 baked into setup.py, but the version available for install depends
 on your platform.
 
@@ -158,10 +158,10 @@ First, install pip (with sudo if necessary):
 
     apt-get install python-pip
 
-Then, to install, for example, version 1.0.0, use the following (with
+Then, to install, for example, version v1.0.1, use the following (with
 sudo if necessary):
 
-    pip install --no-binary gdal --trusted-host pypi.smoke.airfire.org -i http://pypi.smoke.airfire.org/simple fccsmap==1.0.0
+    pip install --no-binary gdal --trusted-host pypi.smoke.airfire.org -i http://pypi.smoke.airfire.org/simple fccsmap==1.0.1
 
 See the Development > Install Dependencies > Notes section, above, for
 notes on resolving pip and gdal issues.
