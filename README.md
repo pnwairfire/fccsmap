@@ -16,7 +16,7 @@ been made but are not guaranteed.
 ## Dependencies
 
 Whether cloning the repo or installing with pip, you'll first need to
-manually install gdal, proj, and netcdf, which fccsmap depends on.  These
+manually install numpy, gdal, proj, and netcdf, which fccsmap depends on.  These
 instructions assume you already have python and pip installed, as well as
 C and C++ compilers, etc.
 
@@ -35,6 +35,7 @@ Additionally, you'll need the gdal python bindings.  These used to be
 baked into setup.py, but the version available for install depends
 on your platform.
 
+    pip install numpy
     gdal-config --version
     pip install gdal==`gdal-config --version`
 
@@ -43,27 +44,22 @@ http://www.kyngchaos.com/software/unixport.
 
 ### Ubuntu, 12.04 LTS (precise)
 
-First update
+    sudo apt-get update
+    sudo apt-get install -y python3 python3-dev python3-pip
+    sudo pip3 install --upgrade pip3
+    sudo apt-get install -y libnetcdf-dev proj
+    sudo apt-get install -y libgdal-dev
+    sudo apt-get install -y python3-numpy python3-gdal
+    sudo apt-get install -y libxml2-dev libxslt1-dev
+
+### Ubuntu, 16.04 LTS (Xenial)
 
     sudo apt-get update
-
-If you don't have python and pip installed:
-
-    sudo apt-get install -y python python-dev python-pip
-    sudo pip install --upgrade pip
-
-Install libnetcdf and libproj
-
-    sudo apt-get install -y libnetcdf-dev proj
-
-Install numpy and gdal.
-
-    sudo pip install numpy==1.8.0
-    sudo apt-get install -y libgdal1-1.7.0
-    sudo pip install gdal==1.7.0
-
-Install xml libs:
-
+    sudo apt-get install -y python3 python3-dev python3-pip
+    sudo pip3 install distribute
+    sudo apt-get install -y libnetcdf-dev libproj-dev
+    sudo apt-get install -y libgdal-dev
+    sudo apt-get install -y python3-numpy python3-gdal
     sudo apt-get install -y libxml2-dev libxslt1-dev
 
 ## Development
@@ -93,7 +89,6 @@ Run the following to install packages required for development and testing:
 
     pip install -r requirements-test.txt
     pip install -r requirements-dev.txt
-
 
 #### Notes
 

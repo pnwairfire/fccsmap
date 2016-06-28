@@ -32,8 +32,8 @@ setup(
     description='supports the look-up of FCCS fuelbed information by lat/lng or vector geo spatial data.',
     install_requires=[
         "pyairfire>=1.1.1",
-        "numpy==1.8.0",
-        # Note: gdal must now be installed manually beforehand
+        # Note: numpy and gdal must now be installed manually beforehand
+        #"numpy==1.11.1",
         #"pygdal==1.11.2.1",
         #"gdal==1.11.2",
         "shapely==1.5.7",
