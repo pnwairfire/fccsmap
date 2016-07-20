@@ -13,7 +13,7 @@ This package was originally developed to support python 2.7, but has since
 been refactored to support 3.5. Attempts to support both 2.7 and 3.5 have
 been made but are not guaranteed.
 
-## Dependencies
+## External Dependencies
 
 Whether cloning the repo or installing with pip, you'll first need to
 manually install numpy, gdal, proj, and netcdf, which fccsmap depends on.  These
@@ -250,4 +250,16 @@ Here's one that looks up fuelbeds under two polygon regions
 Here's an example that looks up the fuelbed information at a specific
 location
 
- $ fccsmap --log-level=DEBUG -l 47.0,-121.0
+    $ fccsmap --log-level=DEBUG -l 47.0,-121.0
+
+
+Here's an example that looks up the fuelbeds at multiple point locations.
+(This is only appropriate if the area at each location is the same.)
+
+    $ fccsmap --log-level=DEBUG -g '{
+      "type": "MultiPoint",
+      "coordinates": [
+        [-121.4522115, 47.4316976],
+        [-120.0, 48.0]
+      ]
+    }'

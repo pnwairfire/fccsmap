@@ -81,7 +81,7 @@ class FccsLookUp(object):
         Arguments
          - geo_data -- vector data, json formatted (or already loaded)
 
-        Expected format of geo_data:
+        Examples of valid geo_data format:
 
             {
                 "type": "MultiPolygon",
@@ -95,6 +95,14 @@ class FccsLookUp(object):
                             [-121.6458395, 47.8211024]
                         ]
                     ]
+                ]
+            }
+
+            {
+                "type": "MultiPoint",
+                "coordinates": [
+                    [-121.4522115, 47.4316976],
+                    [-120.0, 48.0]
                 ]
             }
         """
