@@ -16,12 +16,12 @@ from pyairfire import scripting
 from functools import reduce
 
 try:
-    from fccsmap.lookup import FccsLookUp
+    from fccsmap import lookup, __version__
 except:
     import os
     root_dir = os.path.abspath(os.path.join(sys.path[0], '../'))
     sys.path.insert(0, root_dir)
-    from fccsmap.lookup import FccsLookUp
+    from fccsmap import lookup, __version__
 
 
 OPTIONAL_ARGS = [
@@ -68,6 +68,14 @@ OPTIONAL_ARGS = [
         'long': '--fccs-version',
         'help': "Version of FCCS NetCDF file",
         'default': '2'
+    },
+    {
+        #'short': "-v",
+        'long': '--version',
+        'dest': 'version',
+        'action': 'store_true',
+        'help': "Output fccsmap package version and exit.",
+        'default': False
     }
 ]
 
@@ -104,9 +112,14 @@ Example calls:
     }'
 """
 
+def output_version(parser, args):
+    if args.version:
+        sys.stdout.write("fccsmap package version {}\n".format(__version__))
+        sys.exit(0)
+
 def main():
     parser, args = scripting.args.parse_args([], OPTIONAL_ARGS,
-        epilog=EPILOG_STR)
+        epilog=EPILOG_STR, pre_validation=output_version)
 
     if 1 != sum([int(not not e) for e in
             [args.lat_lng, args.indices, args.geo_data]]):
@@ -116,7 +129,7 @@ def main():
             extra_output=lambda: parser.print_help())
 
     try:
-        lookup = FccsLookUp(fccs_fuelload_file=args.fccs_fuelload_file,
+        fccs_lookup = lookup.FccsLookUp(fccs_fuelload_file=args.fccs_fuelload_file,
             fccs_fuelload_param=args.fccs_fuelload_file,
             is_alaska=args.is_alaska, fccs_version=args.fccs_version)
         if args.lat_lng:
@@ -126,14 +139,14 @@ def main():
                 scripting.utils.exit_with_msg("Invalid lat/lng: %s" % (args.lat_lng))
             args = [float(e) for e in reduce(lambda a, b: a + b, lats_lngs, [])]
             if len(lats_lngs[0]) == 2:
-                data = lookup.look_up_by_lat_lng_range(*args)
+                data = fccs_lookup.look_up_by_lat_lng_range(*args)
             else:
-                data = lookup.look_up_by_lat_lng(*args)
+                data = fccs_lookup.look_up_by_lat_lng(*args)
 
         elif args.indices:
             raise NotImplementedError("Looking up fuelbeds by grid indices not supported")
         else:
-            data = lookup.look_up(json.loads(args.geo_data))
+            data = fccs_lookup.look_up(json.loads(args.geo_data))
         sys.stdout.write(json.dumps(data))
 
     except Exception as e:
