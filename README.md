@@ -140,7 +140,7 @@ to the search path.
 Use pytest:
 
     py.test
-    py.test test/fccsmap/
+    py.test test/unit/fccsmap/test_lookup.py
 
 You can also use the ```--collect-only``` option to see a list of all tests.
 
@@ -177,89 +177,6 @@ TODO: fill this in
 #### fccsmap
 
 ```fccsmap``` returns fuelbed information by geographical location or region.
-To see it's options, use the '-h' option:
+To see it's options and examples, use the '-h' option:
 
     $ fccsmap -h
-
-##### Examples
-
-Here's an example that looks up the fuelbeds around Snoqualmie pass
-
-    $ fccsmap --log-level=DEBUG -g '{
-          "type": "MultiPolygon",
-          "coordinates": [
-            [
-              [
-                [-121.4522115, 47.4316976],
-                [-121.3990506, 47.4316976],
-                [-121.3990506, 47.4099293],
-                [-121.4522115, 47.4099293],
-                [-121.4522115, 47.4316976]
-              ]
-            ]
-          ]
-        }'
-
-This one looks up fuelbeds in WA state
-
-    $ fccsmap --log-level=DEBUG -g '{
-          "type": "MultiPolygon",
-          "coordinates": [
-              [
-                  [
-                      [-125.0, 49.0],
-                      [-117.0, 49.0],
-                      [-117.0, 45.0],
-                      [-125.0, 45.0],
-                      [-125.0, 49.0]
-                  ]
-              ]
-          ]
-        }'
-
-This is the same query, but using '-l'/'--lat-lng' option:
-
-    $ fccsmap --log-level=DEBUG -l 45.0:49.0,-125.0:-117.0
-
-Here's one that looks up fuelbeds under two polygon regions
-
-    $ fccsmap --log-level=DEBUG -g '{
-      "type": "MultiPolygon",
-      "coordinates": [
-        [
-          [
-            [-121.4522115, 47.4316976],
-            [-121.3990506, 47.4316976],
-            [-121.3990506, 47.4099293],
-            [-121.4522115, 47.4099293],
-            [-121.4522115, 47.4316976]
-          ]
-        ],
-        [
-          [
-            [-120.4522115, 47.4316976],
-            [-120.3990506, 47.4316976],
-            [-120.3990506, 47.4099293],
-            [-120.4522115, 47.4099293],
-            [-120.4522115, 47.4316976]
-          ]
-        ]
-      ]
-    }'
-
-Here's an example that looks up the fuelbed information at a specific
-location
-
-    $ fccsmap --log-level=DEBUG -l 47.0,-121.0
-
-
-Here's an example that looks up the fuelbeds at multiple point locations.
-(This is only appropriate if the area at each location is the same.)
-
-    $ fccsmap --log-level=DEBUG -g '{
-      "type": "MultiPoint",
-      "coordinates": [
-        [-121.4522115, 47.4316976],
-        [-120.0, 48.0]
-      ]
-    }'
