@@ -139,7 +139,7 @@ def main():
                 scripting.utils.exit_with_msg("Invalid lat/lng: %s" % (args.lat_lng))
             args = [float(e) for e in reduce(lambda a, b: a + b, lats_lngs, [])]
             if len(lats_lngs[0]) == 2:
-                data = fccs_lookup.look_up_by_lat_lng_range(*args)
+                data = fccs_lookup.look_up_bounding_box(*args)
             else:
                 data = fccs_lookup.look_up_by_lat_lng(*args)
 

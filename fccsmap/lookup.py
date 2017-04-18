@@ -153,8 +153,9 @@ class FccsLookUp(object):
 
         return self.look_up(geo_data)
 
-    def look_up_by_lat_lng_range(self, s_lat, n_lat, w_lng, e_lng):
-        """Looks up FCCS fuelbed information with region defined lat/lng ranges
+    def look_up_bounding_box(self, s_lat, n_lat, w_lng, e_lng):
+        """Looks up FCCS fuelbed information within region defined lat/lng
+        ranges.  Purely a convenience methat marshals input for lookup.
 
         Arguments
          - s_lat -- south latitude boundary of region
