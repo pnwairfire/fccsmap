@@ -32,15 +32,18 @@ __all__ = [
 FUEL_LOAD_NCS = {
     'fccs1': {
         'file': os.path.dirname(__file__) + '/data/fccs_fuelload.nc',
-        'param': 'FCCS_FuelLoading'
+        'param': 'FCCS_FuelLoading',
+        'grid_resolution': 1
     },
     'fccs2': {
         'file': os.path.dirname(__file__) + '/data/fccs2_fuelload.nc',
-        'param': 'Band1'
+        'param': 'Band1',
+        'grid_resolution': 1
     },
     'ak': {
         'file': os.path.dirname(__file__) + '/data/FCCS_Alaska.nc',
-        'param': 'Band1'
+        'param': 'Band1',
+        'grid_resolution': 1
     }
 }
 
@@ -55,6 +58,10 @@ class FccsLookUp(object):
          - fccs_version -- '1' or '2'
          - fccs_fuelload_file -- NetCDF file containing FCCS lookup map
          - fccs_fuelload_param -- name of variable in NetCDF file
+         - grid_resolution -- length of grid cells in km
+
+
+        TODO: determine grid_resolution from netcdf file
         """
 
         # TODO: determine which combinations of file/param/version can be
@@ -65,8 +72,11 @@ class FccsLookUp(object):
         fuel_load_key = 'ak' if is_alaska else 'fccs%s'%(fccs_version)
         logging.debug('fuel load key: %s', fuel_load_key)
 
-        self.filename = options.get('fccs_fuelload_file') or FUEL_LOAD_NCS[fuel_load_key]['file']
-        self.param = options.get('fccs_fuelload_param') or FUEL_LOAD_NCS[fuel_load_key]['param']
+        for k in ('file', 'param', 'grid_resolition'):
+            v = (options.get('fccs_fuelload_{}'.format(k))
+                or FUEL_LOAD_NCS[fuel_load_key][k])
+            setattr(self, 'filename' if k==file else k, v)
+
         self.gridfile_specifier = "NETCDF:%s:%s" % (self.filename, self.param)
         self._initialize_projector()
 
@@ -114,6 +124,22 @@ class FccsLookUp(object):
         if hasattr(geo_data, 'capitalize'):
             geo_data = json.loads(geo_data)
 
+        if geo_data["type"] in ('Point', 'MultiPoint'):
+            new_geo_data = self._transform_points(geo_data,
+                self.grid_resolution)
+            stats = self._look_up(new_geo_data)
+            if False:  # TODO: check if all water
+                new_geo_data = self._transform_points(geo_data,
+                    3*self.grid_resolution)
+                # at this point, if all water, we'll stick with it
+
+        else:
+            stats = self._look_up(geo_data)
+
+        return stats
+
+
+    def _look_up(self, geo_data):
         s = geometry.shape(geo_data)
         s = ops.transform(self.projector, s)
 
@@ -140,6 +166,27 @@ class FccsLookUp(object):
     ##
     ## Helper methods
     ##
+
+    def _transform_points(self, geo_data, radius):
+        coordinates = (geo_data['coordinates'] if geo_data['type'] == 'MultiPoint'
+            else [geo_data['coordinates']]
+
+        delta_lat = ...
+        delta_lng = ...
+
+        new_geo_data = {
+          "type": "MultiPolygon",
+          "coordinates": []
+        }
+        for c in coordinates:
+            new_geo_data["coordinates"].append([[
+                [c[0]-delta_lng, c[1]-delta_lat],
+                [c[0]-delta_lng, c[1]+delta_lat],
+                [c[0]+delta_lng, c[1]+delta_lat],
+                [c[0]+delta_lng, c[1]-delta_lat],
+            ]])
+
+        return new_geo_data
 
     LAT_0_EXTRACTOR = re.compile('PARAMETER\["latitude_of_center",([^]]+)\]')
 
