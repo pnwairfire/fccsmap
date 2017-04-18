@@ -86,6 +86,13 @@ Example calls:
           "coordinates": [-121.4522115, 47.4316976]
         }}' | python -m json.tool|less
 
+  Single point in Lake Chelan
+
+    $ {script_name} --log-level=DEBUG -g '{{
+          "type": "Point",
+          "coordinates": [-120.3606708, 48.0364064]
+        }}' | python -m json.tool|less
+
   MultiPoint example
 
     $ {script_name} --log-level=DEBUG -g '{{
