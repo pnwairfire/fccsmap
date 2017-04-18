@@ -30,26 +30,28 @@ __all__ = [
     'FccsLookUp'
 ]
 
-FUEL_LOAD_NCS = {
-    'fccs1': {
-        'file': os.path.dirname(__file__) + '/data/fccs_fuelload.nc',
-        'param': 'FCCS_FuelLoading',
-        'grid_resolution': 1
-    },
-    'fccs2': {
-        'file': os.path.dirname(__file__) + '/data/fccs2_fuelload.nc',
-        'param': 'Band1',
-        'grid_resolution': 1
-    },
-    'ak': {
-        'file': os.path.dirname(__file__) + '/data/FCCS_Alaska.nc',
-        'param': 'Band1',
-        'grid_resolution': 1
-    }
-}
-
-
 class FccsLookUp(object):
+
+    FUEL_LOAD_NCS = {
+        'fccs1': {
+            'file': os.path.dirname(__file__) + '/data/fccs_fuelload.nc',
+            'param': 'FCCS_FuelLoading',
+            'grid_resolution': 1
+        },
+        'fccs2': {
+            'file': os.path.dirname(__file__) + '/data/fccs2_fuelload.nc',
+            'param': 'Band1',
+            'grid_resolution': 1
+        },
+        'ak': {
+            'file': os.path.dirname(__file__) + '/data/FCCS_Alaska.nc',
+            'param': 'Band1',
+            'grid_resolution': 1
+        }
+    }
+
+    IGNORED_PERCENT_THRESHOLD = 99.9  # instead of 100.0, to account for rounding errors
+    IGNORED_FUELBEDS = ('0', '900')
 
     def __init__(self, **options):
         """Constructor
@@ -60,6 +62,10 @@ class FccsLookUp(object):
          - fccs_fuelload_file -- NetCDF file containing FCCS lookup map
          - fccs_fuelload_param -- name of variable in NetCDF file
          - grid_resolution -- length of grid cells in km
+         - ignored_fuelbeds -- fuelbeds to ignore
+         - ignored_percent_threshold -- percentage of ignored fuelbeds which
+            should trigger resampling at larger; only plays a part in
+            Point and MultiPoint look-ups
 
 
         TODO: determine grid_resolution from netcdf file
@@ -75,11 +81,16 @@ class FccsLookUp(object):
 
         for k in ('file', 'param', 'grid_resolution'):
             v = (options.get('fccs_fuelload_{}'.format(k))
-                or FUEL_LOAD_NCS[fuel_load_key][k])
+                or self.FUEL_LOAD_NCS[fuel_load_key][k])
             setattr(self, 'filename' if k=='file' else k, v)
 
         self.gridfile_specifier = "NETCDF:%s:%s" % (self.filename, self.param)
         self._initialize_projector()
+
+        self._ignored_fuelbeds = options.get(
+            'ignored_fuelbeds', self.IGNORED_FUELBEDS)
+        self._ignored_percent_threshold = options.get(
+            'ignored_percent_threshold', self.IGNORED_PERCENT_THRESHOLD)
 
     ##
     ## Public Interface
@@ -129,75 +140,24 @@ class FccsLookUp(object):
             new_geo_data = self._transform_points(geo_data,
                 self.grid_resolution)
             stats = self._look_up(new_geo_data)
-            if False:  # TODO: check if all water
+
+            if self._has_high_percent_of_ignored(stat):
                 new_geo_data = self._transform_points(geo_data,
                     3*self.grid_resolution)
+                stats = self._look_up(new_geo_data)
                 # at this point, if all water, we'll stick with it
+
+            stats['sampled_grid_cells'] = stats.pop('grid_cells')
+            stats['sampled_area'] = stats.pop('area')
 
         else:
             stats = self._look_up(geo_data)
 
-        return stats
-
-
-    def _look_up(self, geo_data):
-        s = geometry.shape(geo_data)
-        s = ops.transform(self.projector, s)
-
-        def counts(x):
-            counts = defaultdict(lambda: 0)
-            for i in range(len(x.data)):
-                for j in range(len(x.data[i])):
-                    if not x.mask[i][j]:
-                        # Note: if x.data[i][j] < 0, it's up
-                        # to calling code to deal with it
-                        counts[x.data[i][j]] += 1
-            return dict(counts)
-
-        stats = zonal_stats(s, self.gridfile_specifier,
-            add_stats={'counts':counts})
-        # TODO: make sure area units are correct and properly translated
-        # to real geographical area; read them from nc file
-        # TODO: read and include grid cell size from nc file
-        final_stats = self._compute_percentages(stats)
-        final_stats.update(area=s.area, units='m^2')
-        return final_stats
-
+        return self._remove_ignored(stats)
 
     ##
     ## Helper methods
     ##
-
-    KM_PER_DEG_LAT = 111.0
-    KM_PER_DEG_LNG_AT_EQUATOR = 111.321
-
-    def _transform_points(self, geo_data, radius):
-        coordinates = (geo_data['coordinates'] if geo_data['type'] == 'MultiPoint'
-            else [geo_data['coordinates']])
-
-        # delta_lat and and delta_lng_factor could be computed once
-        # per instance, but we'd still have to multiple by some factor
-        # given the size of the sphere of influence, and it could make
-        # code more complicated for what would probably be not much
-        # performance gain.
-        # TODO: benchmark to confirm the comment above?
-        delta_lat = radius / self.KM_PER_DEG_LAT
-        delta_lng_factor = (radius / self.KM_PER_DEG_LNG_AT_EQUATOR)
-
-        new_geo_data = {
-          "type": "MultiPolygon",
-          "coordinates": []
-        }
-        for c in coordinates:
-            delta_lng = delta_lng_factor * math.cos(c[1])
-            new_geo_data["coordinates"].append([[
-                [c[0]-delta_lng, c[1]-delta_lat],
-                [c[0]-delta_lng, c[1]+delta_lat],
-                [c[0]+delta_lng, c[1]+delta_lat],
-                [c[0]+delta_lng, c[1]-delta_lat],
-            ]])
-
-        return new_geo_data
 
     LAT_0_EXTRACTOR = re.compile('PARAMETER\["latitude_of_center",([^]]+)\]')
 
@@ -253,6 +213,70 @@ class FccsLookUp(object):
                 metadata['%s#grid_mapping' % (self.param)]
             ))
 
+    KM_PER_DEG_LAT = 111.0
+    KM_PER_DEG_LNG_AT_EQUATOR = 111.321
+
+    def _transform_points(self, geo_data, radius):
+        coordinates = (geo_data['coordinates'] if geo_data['type'] == 'MultiPoint'
+            else [geo_data['coordinates']])
+
+        # delta_lat and and delta_lng_factor could be computed once
+        # per instance, but we'd still have to multiple by some factor
+        # given the size of the sphere of influence, and it could make
+        # code more complicated for what would probably be not much
+        # performance gain.
+        # TODO: benchmark to confirm the comment above?
+        delta_lat = radius / self.KM_PER_DEG_LAT
+        delta_lng_factor = (radius / self.KM_PER_DEG_LNG_AT_EQUATOR)
+
+        new_geo_data = {
+          "type": "MultiPolygon",
+          "coordinates": []
+        }
+        for c in coordinates:
+            delta_lng = delta_lng_factor * math.cos(c[1])
+            new_geo_data["coordinates"].append([[
+                [c[0]-delta_lng, c[1]-delta_lat],
+                [c[0]-delta_lng, c[1]+delta_lat],
+                [c[0]+delta_lng, c[1]+delta_lat],
+                [c[0]+delta_lng, c[1]-delta_lat],
+            ]])
+
+        return new_geo_data
+
+    def _look_up(self, geo_data):
+        s = geometry.shape(geo_data)
+        s = ops.transform(self.projector, s)
+
+        def counts(x):
+            counts = defaultdict(lambda: 0)
+            for i in range(len(x.data)):
+                for j in range(len(x.data[i])):
+                    if not x.mask[i][j]:
+                        # Note: if x.data[i][j] < 0, it's up
+                        # to calling code to deal with it
+                        counts[x.data[i][j]] += 1
+            return dict(counts)
+
+        stats = zonal_stats(s, self.gridfile_specifier,
+            add_stats={'counts':counts})
+        # TODO: make sure area units are correct and properly translated
+        # to real geographical area; read them from nc file
+        # TODO: read and include grid cell size from nc file
+        final_stats = self._compute_percentages(stats)
+        final_stats.update(area=s.area, units='m^2')
+        return final_stats
+
+    def _has_high_percent_of_ignored(self, stats):
+        return (self._compute_total_percent_ignored(stats) >=
+            self._ignored_percent_threshold)
+
+    def _compute_total_percent_ignored(self, stats):
+        return sum([
+            stats.get('fuelbeds', {}).get(fccs_id, {}).get('percent') or 0
+                for fccs_id in self._ignored_fuelbeds
+        ])
+
     def _compute_percentages(self, stats):
         total_counts = defaultdict(lambda: 0)
         for stat_set in stats:
@@ -267,3 +291,21 @@ class FccsLookUp(object):
                 } for k,v in list(total_counts.items())
             }
         }
+
+
+    def _remove_ignored(self, stats):
+        """Removes ignored fuelbeds and readjusts percentages so that they
+        add up to 100.
+        """
+        # TODO: don't recompute total ignored if it was already computed,
+        #   i.e. for Point or MultiPoint
+        total_percent_ignored = self._compute_total_percent_ignored(stats)
+        if total_percent_ignored > 0.0:
+            adjustment_factor = 100.0 / (100.0 - total_percent_ignored)
+            for fccs_id in stats.get('fuelbeds'), {}:
+                if fccs_id in self._ignored_fuelbeds:
+                    stats['fuelbeds'].pop(fccs_id)
+                else:
+                    p = stats['fuelbeds'][fccs_id]['percent'] * adjustment_factor
+                    stats['fuelbeds'][fccs_id]['percent'] = p
+        return stats

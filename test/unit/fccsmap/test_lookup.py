@@ -113,3 +113,47 @@ class TestFccsLookUpTransformPoints(object):
 
     def test_multi_point(self):
         pass
+
+class TestFccsLookUpHasHighPercentOfIgnored(object):
+
+    def test_one_good(self):
+        pass
+
+    def test_two_good(self):
+        pass
+
+    def test_mixture(self):
+        pass
+
+    def test_one_ignored(self):
+        pass
+
+    def test_one_ignored(self):
+        pass
+
+class TestFccsLookupComputeTotalPercentIgnored(object):
+
+    def test_one_good(self):
+        pass
+
+    def test_two_good(self):
+        pass
+
+    def test_mixture(self):
+        pass
+
+    def test_one_ignored(self):
+        pass
+
+    def test_one_ignored(self):
+        pass
+
+class TestFccsLookupComputePercentages(object):
+
+    def test(self):
+        pass
+
+class TestFccsLookupRemovedIgnored(object):
+
+    def test(self):
+        pass
