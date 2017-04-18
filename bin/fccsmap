@@ -26,12 +26,6 @@ except:
 
 OPTIONAL_ARGS = [
     {
-        'short': '-l',
-        'long': '--lat-lng',
-        'help': "comma-separated lat/lng (scalar or range) pair; "
-            "ex. '48.2,-120', '45:46,-121.5:-120.5'"
-    },
-    {
         'short': '-i',
         'long': '--indices',
         'help': "comma-separated grid indices (scalar or range); "
@@ -85,32 +79,74 @@ EPILOG_STR = """\
 
 Example calls:
 
-    $ fccsmap --log-level=DEBUG -l 48.0,-121.0 |python -m json.tool
-    $ fccsmap --log-level=DEBUG -g '{
-        "type": "MultiPolygon",
-        "coordinates": [
-            [[
+    $ {script_name} --log-level=DEBUG -g '{
+          "type": "MultiPoint",
+          "coordinates": [
+            [-121.4522115, 47.4316976],
+            [-120.0, 48.0]
+          ]
+        }'
+
+    $ {script_name} --log-level=DEBUG -g '{
+          "type": "Point",
+          "coordinates": [-121.4522115, 47.4316976]
+        }'
+
+  Area around Snoqualmie pass
+
+    $ {script_name} --log-level=DEBUG -g '{
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [-121.4522115, 47.4316976],
+              [-121.3990506, 47.4316976],
+              [-121.3990506, 47.4099293],
+              [-121.4522115, 47.4099293],
+              [-121.4522115, 47.4316976]
+            ]
+          ]
+        }'
+
+  WA state
+
+    $ {script_name} --log-level=DEBUG -g '{
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [-125.0, 49.0],
+              [-117.0, 49.0],
+              [-117.0, 45.0],
+              [-125.0, 45.0],
+              [-125.0, 49.0]
+            ]
+          ]
+        }'
+
+  MultiPolygon example
+
+    $ {script_name} --log-level=DEBUG -g '{
+          "type": "MultiPolygon",
+          "coordinates": [
+            [
+              [
                 [-120.9, 48.1],
                 [-120.9, 47.9],
                 [-121.1, 47.9],
                 [-121.1, 48.1]
-            ]],
-            [[
+              ]
+            ],
+            [
+              [
                 [-121.3, 48.3],
                 [-121.5, 48.3],
                 [-121.5, 48.5],
                 [-121.3, 48.5]
-            ]]
-        ]
-    }' | python -m json.tool
-    $ fccsmap --log-level=DEBUG -g '{
-      "type": "MultiPoint",
-      "coordinates": [
-        [-121.4522115, 47.4316976],
-        [-120.0, 48.0]
-      ]
-    }'
-"""
+              ]
+            ]
+          ]
+        }'
+
+ """.format(script_name=sys.argv[0])
 
 def output_version(parser, args):
     if args.version:
@@ -122,31 +158,21 @@ def main():
         epilog=EPILOG_STR, pre_validation=output_version)
 
     if 1 != sum([int(not not e) for e in
-            [args.lat_lng, args.indices, args.geo_data]]):
+            [args.indices, args.geo_data]]):
         scripting.utils.exit_with_msg(
-            "Specify either '-l'/'--lat-lng', '-i'/'--indices', "
-            "or '-g'/'--geo-data'",
+            "Specify either '-i'/'--indices', or '-g'/'--geo-data'",
             extra_output=lambda: parser.print_help())
 
     try:
         fccs_lookup = lookup.FccsLookUp(fccs_fuelload_file=args.fccs_fuelload_file,
             fccs_fuelload_param=args.fccs_fuelload_file,
             is_alaska=args.is_alaska, fccs_version=args.fccs_version)
-        if args.lat_lng:
-            lats_lngs = [e.split(':') for e in args.lat_lng.split(',')]
-            if (2 != len(lats_lngs) or len(lats_lngs[0]) != len(lats_lngs[1]) or
-                    len(lats_lngs[0]) not in [1, 2]):
-                scripting.utils.exit_with_msg("Invalid lat/lng: %s" % (args.lat_lng))
-            args = [float(e) for e in reduce(lambda a, b: a + b, lats_lngs, [])]
-            if len(lats_lngs[0]) == 2:
-                data = fccs_lookup.look_up_bounding_box(*args)
-            else:
-                data = fccs_lookup.look_up_by_lat_lng(*args)
 
-        elif args.indices:
+        if args.indices:
             raise NotImplementedError("Looking up fuelbeds by grid indices not supported")
         else:
             data = fccs_lookup.look_up(json.loads(args.geo_data))
+
         sys.stdout.write(json.dumps(data))
 
     except Exception as e:

@@ -83,6 +83,18 @@ class FccsLookUp(object):
 
         Examples of valid geo_data format:
 
+          MultiPoint:
+
+            {
+                "type": "MultiPoint",
+                "coordinates": [
+                    [-121.4522115, 47.4316976],
+                    [-120.0, 48.0]
+                ]
+            }
+
+          MultiPolygon:
+
             {
                 "type": "MultiPolygon",
                 "coordinates": [
@@ -97,18 +109,11 @@ class FccsLookUp(object):
                     ]
                 ]
             }
-
-            {
-                "type": "MultiPoint",
-                "coordinates": [
-                    [-121.4522115, 47.4316976],
-                    [-120.0, 48.0]
-                ]
-            }
         """
 
         if hasattr(geo_data, 'capitalize'):
             geo_data = json.loads(geo_data)
+
         s = geometry.shape(geo_data)
         s = ops.transform(self.projector, s)
 
@@ -131,53 +136,6 @@ class FccsLookUp(object):
         final_stats.update(area=s.area, units='m^2')
         return final_stats
 
-    def look_up_by_lat_lng(self, lat, lng, area=None):
-        """Looks up FCCS fuelbed information at lat/lng
-
-        Arguments
-         - lat -- latitude of location
-         - lng -- latitude of location
-
-        Optional Arguments
-         - area -- area in m^2;  if specified, a circular area around the
-           lat/lng is considered
-        """
-        # TODO: if area is specified, add buffer around point
-        if area:
-            raise NotImplementedError("Lat/lng + area not yet supported")
-        else:
-            geo_data = {
-                "type": "Point",
-                "coordinates": [lng, lat]
-            }
-
-        return self.look_up(geo_data)
-
-    def look_up_bounding_box(self, s_lat, n_lat, w_lng, e_lng):
-        """Looks up FCCS fuelbed information within region defined lat/lng
-        ranges.  Purely a convenience methat marshals input for lookup.
-
-        Arguments
-         - s_lat -- south latitude boundary of region
-         - n_lat -- north latitude boundary of region
-         - w_lng -- west longitude boundary of region
-         - e_lng -- east longitude boundary of region
-
-        TODO: Make sure this correctly handles case where region crosses
-        international date line (i.e. w_lng > e_lng).
-        """
-        return self.look_up({
-            "type": "Polygon",
-            "coordinates": [
-                [
-                    [w_lng, s_lat],
-                    [w_lng, n_lat],
-                    [e_lng, n_lat],
-                    [e_lng, s_lat],
-                    [w_lng, s_lat]
-                ]
-            ]
-        })
 
     ##
     ## Helper methods
