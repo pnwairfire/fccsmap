@@ -79,17 +79,21 @@ EPILOG_STR = """\
 
 Example calls:
 
+  Single point near Snoqualmie pass
+
+    $ {script_name} --log-level=DEBUG -g '{
+          "type": "Point",
+          "coordinates": [-121.4522115, 47.4316976]
+        }'
+
+  MultiPoint example
+
     $ {script_name} --log-level=DEBUG -g '{
           "type": "MultiPoint",
           "coordinates": [
             [-121.4522115, 47.4316976],
             [-120.0, 48.0]
           ]
-        }'
-
-    $ {script_name} --log-level=DEBUG -g '{
-          "type": "Point",
-          "coordinates": [-121.4522115, 47.4316976]
         }'
 
   Area around Snoqualmie pass
