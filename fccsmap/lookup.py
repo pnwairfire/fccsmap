@@ -16,6 +16,7 @@ __author__      = "Joel Dubowy"
 
 import json
 import logging
+import math
 import os
 import re
 from collections import defaultdict
@@ -72,10 +73,10 @@ class FccsLookUp(object):
         fuel_load_key = 'ak' if is_alaska else 'fccs%s'%(fccs_version)
         logging.debug('fuel load key: %s', fuel_load_key)
 
-        for k in ('file', 'param', 'grid_resolition'):
+        for k in ('file', 'param', 'grid_resolution'):
             v = (options.get('fccs_fuelload_{}'.format(k))
                 or FUEL_LOAD_NCS[fuel_load_key][k])
-            setattr(self, 'filename' if k==file else k, v)
+            setattr(self, 'filename' if k=='file' else k, v)
 
         self.gridfile_specifier = "NETCDF:%s:%s" % (self.filename, self.param)
         self._initialize_projector()
@@ -172,7 +173,7 @@ class FccsLookUp(object):
 
     def _transform_points(self, geo_data, radius):
         coordinates = (geo_data['coordinates'] if geo_data['type'] == 'MultiPoint'
-            else [geo_data['coordinates']]
+            else [geo_data['coordinates']])
 
         # delta_lat and and delta_lng_factor could be computed once
         # per instance, but we'd still have to multiple by some factor
@@ -188,7 +189,7 @@ class FccsLookUp(object):
           "coordinates": []
         }
         for c in coordinates:
-            delta_lng = delta_lng_factor * cosine (c[1])
+            delta_lng = delta_lng_factor * math.cos(c[1])
             new_geo_data["coordinates"].append([[
                 [c[0]-delta_lng, c[1]-delta_lat],
                 [c[0]-delta_lng, c[1]+delta_lat],
