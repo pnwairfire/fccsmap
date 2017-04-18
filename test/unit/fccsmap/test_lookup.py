@@ -23,3 +23,11 @@ class TestFccsLookUp(object):
 
     def test_multipolygon(self):
         pass
+
+class TestFccsLookUpTransformPoints(object):
+
+    def test_point(self):
+        pass
+
+    def test_multi_point(self):
+        pass
