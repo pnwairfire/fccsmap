@@ -150,8 +150,71 @@ class TestFccsLookupComputeTotalPercentIgnored(object):
 
 class TestFccsLookupComputePercentages(object):
 
-    def test(self):
+    def setup(self):
+        self._lookup = FccsLookUp()
+
+    def test_none(self):
+        # TODO: figure out what shapely would return if no hits
         pass
+
+    def test_one(self):
+        stats = [
+            {
+                'min': 24.0,
+                '__fid__': 0,
+                'mean': 24.0,
+                'counts': {
+                    24: 1
+                },
+                'count': 1,
+                'max': 24.0
+            }
+        ]
+        expected = {
+            'fuelbeds': {
+                '24': {
+                    'percent': 100.0,
+                    'grid_cells': 1
+                }
+            },
+            'grid_cells': 1
+        }
+        assert self._lookup._compute_percentages(stats) == expected
+
+    def test_multiple(self):
+        stats = [
+            {
+                'min': 41.0,
+                '__fid__': 0,
+                'mean': 562.1,
+                'counts': {
+                    900: 6,
+                    41: 1,
+                    60: 3
+                },
+                'count': 14,
+                'max': 900.0
+            }
+        ]
+        expected = {
+            'fuelbeds': {
+                '900': {
+                    'percent': 60.0,
+                    'grid_cells': 6
+                },
+                '41': {
+                    'percent': 10.0,
+                    'grid_cells': 1
+                },
+                '60': {
+                    'percent': 30.0,
+                    'grid_cells': 3
+                }
+            },
+            'grid_cells': 10
+        }
+        assert self._lookup._compute_percentages(stats) == expected
+
 
 class TestFccsLookupRemoveIgnored(object):
 
