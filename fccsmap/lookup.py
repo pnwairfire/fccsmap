@@ -148,11 +148,13 @@ class FccsLookUp(object):
 
         if not self._no_sampling and geo_data["type"] in (
                 'Point', 'MultiPoint'):
+            logging.debug("Sampling 1 * grid resoluation")
             new_geo_data = self._transform_points(geo_data,
                 self.grid_resolution)
             stats = self._look_up(new_geo_data)
 
             if self._has_high_percent_of_ignored(stats):
+                logging.debug("Resampling 3 * grid resoluation")
                 new_geo_data = self._transform_points(geo_data,
                     3*self.grid_resolution)
                 stats = self._look_up(new_geo_data)
