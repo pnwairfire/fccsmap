@@ -227,8 +227,9 @@ class FccsLookUp(object):
     KM_PER_DEG_LAT = 111.0
     KM_PER_DEG_LNG_AT_EQUATOR = 111.321
 
-    def _transform_points(self, geo_data, radius):
-        coordinates = (geo_data['coordinates'] if geo_data['type'] == 'MultiPoint'
+    def _transform_points(self, geo_data, radius_in_km):
+        coordinates = (geo_data['coordinates']
+            if geo_data['type'] == 'MultiPoint'
             else [geo_data['coordinates']])
 
         # delta_lat and and delta_lng_factor could be computed once
@@ -237,15 +238,15 @@ class FccsLookUp(object):
         # code more complicated for what would probably be not much
         # performance gain.
         # TODO: benchmark to confirm the comment above?
-        delta_lat = radius / self.KM_PER_DEG_LAT
-        delta_lng_factor = (radius / self.KM_PER_DEG_LNG_AT_EQUATOR)
+        delta_lat = radius_in_km / self.KM_PER_DEG_LAT
+        delta_lng_factor = (radius_in_km / self.KM_PER_DEG_LNG_AT_EQUATOR)
 
         new_geo_data = {
           "type": "MultiPolygon",
           "coordinates": []
         }
         for c in coordinates:
-            delta_lng = delta_lng_factor * math.cos(c[1])
+            delta_lng = delta_lng_factor / math.cos((math.pi*c[1])/180.0)
             new_geo_data["coordinates"].append([[
                 [c[0]-delta_lng, c[1]-delta_lat],
                 [c[0]-delta_lng, c[1]+delta_lat],
