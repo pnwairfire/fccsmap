@@ -43,10 +43,9 @@ class TestFccsLookUp(object):
         }
         expected = {
             'fuelbeds': {
-                '319': {'grid_cells': 4, 'percent': 18.18181818181818},
-                '41': {'grid_cells': 1, 'percent': 4.545454545454545},
-                '52': {'grid_cells': 10, 'percent': 45.45454545454545},
-                '60': {'grid_cells': 7, 'percent': 31.818181818181813}
+                '319': {'grid_cells': 4, 'percent': 19.047619047619047},
+                '52': {'grid_cells': 10, 'percent': 47.61904761904762},
+                '60': {'grid_cells': 7, 'percent': 33.33333333333333}
             },
             'sampled_area': 36128384.2273902,
             'sampled_grid_cells': 36,
@@ -105,10 +104,9 @@ class TestFccsLookUp(object):
             'sampled_grid_cells': 72,
             'units': 'm^2',
             'fuelbeds': {
-                '319': {'grid_cells': 5, 'percent': 10.869565217391305},
-                '60': {'grid_cells': 7, 'percent': 15.217391304347826},
-                '52': {'grid_cells': 33, 'percent': 71.73913043478261},
-                '41': {'grid_cells': 1, 'percent': 2.1739130434782608}
+                '319': {'grid_cells': 5, 'percent': 11.111111111111112},
+                '60': {'grid_cells': 7, 'percent': 15.555555555555557},
+                '52': {'grid_cells': 33, 'percent': 73.33333333333334}
             }
         }
         assert self._lookup.look_up(geo_data) == expected
@@ -132,25 +130,13 @@ class TestFccsLookUp(object):
             'area': 8217580424.304997,
             'grid_cells': 8219,
             'fuelbeds': {
-                '237': {'percent': 10.356963298139767, 'grid_cells': 824},
-                '24': {'percent': 0.025138260432378077, 'grid_cells': 2},
-                '319': {'percent': 2.551533433886375, 'grid_cells': 203},
-                '41': {'percent': 2.7275012569130217, 'grid_cells': 217},
-                '305': {'percent': 0.4147812971342383, 'grid_cells': 33},
-                '60': {'percent': 4.462041226747108, 'grid_cells': 355},
-                '4': {'percent': 0.03770739064856712, 'grid_cells': 3},
-                '21': {'percent': 0.012569130216189038, 'grid_cells': 1},
-                '208': {'percent': 0.9049773755656108, 'grid_cells': 72},
-                '22': {'percent': 0.5656108597285068, 'grid_cells': 45},
-                '238': {'percent': 4.3740573152337845, 'grid_cells': 348},
-                '59': {'percent': 10.985419808949219, 'grid_cells': 874},
-                '9': {'percent': 11.65158371040724, 'grid_cells': 927},
-                '70': {'percent': 0.6033182503770739, 'grid_cells': 48},
-                '63': {'percent': 1.0809451985922571, 'grid_cells': 86},
-                '8': {'percent': 0.0628456510809452, 'grid_cells': 5},
-                '28': {'percent': 0.025138260432378077, 'grid_cells': 2},
-                '61': {'percent': 13.763197586726998, 'grid_cells': 1095},
-                '52': {'percent': 35.39467068878833, 'grid_cells': 2816}
+                '237': {'grid_cells': 824, 'percent': 11.382787677856056},
+                '238': {'grid_cells': 348, 'percent': 4.807293825113965},
+                '52': {'grid_cells': 2816, 'percent': 38.90040060781876},
+                '59': {'grid_cells': 874, 'percent': 12.073490813648293},
+                '60': {'grid_cells': 355, 'percent': 4.903992264124879},
+                '61': {'grid_cells': 1095, 'percent': 15.12639867384998},
+                '9': {'grid_cells': 927, 'percent': 12.805636137588065}
             }
         }
         assert self._lookup.look_up(geo_data) == expected
@@ -184,82 +170,13 @@ class TestFccsLookUp(object):
             "units": "m^2",
             "grid_cells": 8220,
             "fuelbeds": {
-                "208": {
-                    "grid_cells": 72,
-                    "percent": 0.9048636420761593
-                },
-                "8": {
-                    "grid_cells": 5,
-                    "percent": 0.06283775292195551
-                },
-                "305": {
-                    "grid_cells": 33,
-                    "percent": 0.4147291692849064
-                },
-                "28": {
-                    "grid_cells": 2,
-                    "percent": 0.025135101168782203
-                },
-                "41": {
-                    "grid_cells": 217,
-                    "percent": 2.727158476812869
-                },
-                "24": {
-                    "grid_cells": 2,
-                    "percent": 0.025135101168782203
-                },
-                "63": {
-                    "grid_cells": 86,
-                    "percent": 1.0808093502576348
-                },
-                "61": {
-                    "grid_cells": 1095,
-                    "percent": 13.761467889908257
-                },
-                "60": {
-                    "grid_cells": 355,
-                    "percent": 4.461480457458841
-                },
-                "237": {
-                    "grid_cells": 824,
-                    "percent": 10.355661681538267
-                },
-                "4": {
-                    "grid_cells": 3,
-                    "percent": 0.037702651753173305
-                },
-                "319": {
-                    "grid_cells": 203,
-                    "percent": 2.5512127686313937
-                },
-                "52": {
-                    "grid_cells": 2817,
-                    "percent": 35.402789996229735
-                },
-                "21": {
-                    "grid_cells": 1,
-                    "percent": 0.012567550584391102
-                },
-                "9": {
-                    "grid_cells": 927,
-                    "percent": 11.650119391730552
-                },
-                "238": {
-                    "grid_cells": 348,
-                    "percent": 4.373507603368103
-                },
-                "59": {
-                    "grid_cells": 874,
-                    "percent": 10.984039210757823
-                },
-                "22": {
-                    "grid_cells": 45,
-                    "percent": 0.5655397762975996
-                },
-                "70": {
-                    "grid_cells": 48,
-                    "percent": 0.6032424280507729
-                }
+                '237': {'grid_cells': 824, 'percent': 11.381215469613258},
+                '238': {'grid_cells': 348, 'percent': 4.806629834254142},
+                '52': {'grid_cells': 2817, 'percent': 38.90883977900552},
+                '59': {'grid_cells': 874, 'percent': 12.071823204419887},
+                '60': {'grid_cells': 355, 'percent': 4.903314917127071},
+                '61': {'grid_cells': 1095, 'percent': 15.124309392265191},
+                '9': {'grid_cells': 927, 'percent': 12.803867403314916}
             },
             "area": 16273677189.8695
         }
