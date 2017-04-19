@@ -53,10 +53,9 @@ class FccsLookUp(object):
     IGNORED_PERCENT_RESAMPLING_THRESHOLD = 99.9  # instead of 100.0, to account for rounding errors
     IGNORED_FUELBEDS = ('0', '900')
 
-    def __init__(self, **options):
-        """Constructor
-
-        Valid options:
+    # OPTIONS_DOC_STRING used by Constructor docstring as well as
+    # script helpstring
+    OPTIONS_STRING = """
          - is_alaska -- Whether or not location is in Alaska; boolean
          - fccs_version -- '1' or '2'
          - fccs_fuelload_file -- NetCDF file containing FCCS lookup map
@@ -68,9 +67,17 @@ class FccsLookUp(object):
             plays a part in Point and MultiPoint look-ups
          - no_sampling -- don't sample surrounding area for Point
             and MultiPoint geometries
+    """
+
+    def __init__(self, **options):
+        """Constructor
+
+        Valid options:
+
+        {}
 
         TODO: determine grid_resolution from NetCDF file
-        """
+        """.format(self.OPTIONS_STRING)
 
         # TODO: determine which combinations of file/param/version can be
         # specified and raise errors when appropriate

@@ -12,7 +12,7 @@ import logging
 import sys
 import traceback
 
-from pyairfire import scripting
+from afscripting import args as scripting_args
 from functools import reduce
 
 try:
@@ -37,45 +37,27 @@ OPTIONAL_ARGS = [
         'help': 'json-formated geometry vector data; '
             'ex. \'{"type": "MultiPolygon","coordinates": [[[[-121.5212, 48.3082],[-121.5215, 48.3069],[-121.5211, 48.3095],[-121.5212, 48.3082]]],[[[-121.5042, 48.3242],[-121.5045, 48.3228],[-121.5041, 48.3255],[-121.5042, 48.3242]]]]}\''
     },
-    # Options to specify alternate data file
     {
-        'short': '-f',
-        'long': '--fccs-fuelload-file',
-        'help': "NetCDF file containing FCCS lookup map",
-        'metavar': "FILE"
-    },
-    {
-        'short': '-p',
-        'long': '--fccs-fuelload-param',
-        'help': "Name of variable in NetCDF file",
-        'metavar': "FILE"
-    },
-    {
-        'short': '-a',
-        'long': '--is-alaska',
-        'help': "Use Alaska-specific NetCDF file (only if '-f' isn't specified)",
-        'action': "store_true",
-        'default': False
-    },
-    {
-        'short': '-v',
-        'long': '--fccs-version',
-        'help': "Version of FCCS NetCDF file",
-        'default': '2'
-    },
-    {
-        #'short': "-v",
+        'short': "-v",
         'long': '--version',
         'dest': 'version',
         'action': 'store_true',
         'help': "Output fccsmap package version and exit.",
         'default': False
-    }
+     }
 ]
+
+# Note: scripting_args.parse_args adds logging and configuration related
+# options
+
 
 USAGE = "usage: %prog [options] <id> [<id> ...]"
 
 EPILOG_STR = """
+
+Valid Options:
+
+{options_str}
 
 Example calls:
 
@@ -157,7 +139,18 @@ Example calls:
           ]
         }}' | python -m json.tool|less
 
- """.format(script_name=sys.argv[0])
+  Single point with options
+
+    $ {script_name} --log-level=DEBUG  \\
+        --json-config-option ignored_fuelbeds='["900"]' \\
+        --boolean-config-option no_sampling=True \\
+        -g '{{
+          "type": "Point",
+          "coordinates": [-120.3606708, 48.0364064]
+        }}' | python -m json.tool|less
+
+ """.format(options_str=lookup.FccsLookUp.OPTIONS_STRING,
+    script_name=sys.argv[0])
 
 def output_version(parser, args):
     if args.version:
@@ -165,22 +158,22 @@ def output_version(parser, args):
         sys.exit(0)
 
 def main():
-    parser, args = scripting.args.parse_args([], OPTIONAL_ARGS,
+    parser, args = scripting_args.parse_args([], OPTIONAL_ARGS,
         epilog=EPILOG_STR, pre_validation=output_version)
 
     if 1 != sum([int(not not e) for e in
             [args.indices, args.geo_data]]):
-        scripting.utils.exit_with_msg(
+        scripting_args.exit_with_msg(
             "Specify either '-i'/'--indices', or '-g'/'--geo-data'",
             extra_output=lambda: parser.print_help())
 
     try:
-        fccs_lookup = lookup.FccsLookUp(fccs_fuelload_file=args.fccs_fuelload_file,
-            fccs_fuelload_param=args.fccs_fuelload_file,
-            is_alaska=args.is_alaska, fccs_version=args.fccs_version)
+        options = args.config_options or {}
+        fccs_lookup = lookup.FccsLookUp(**options)
 
         if args.indices:
-            raise NotImplementedError("Looking up fuelbeds by grid indices not supported")
+            raise NotImplementedError(
+                "Looking up fuelbeds by grid indices not supported")
         else:
             data = fccs_lookup.look_up(json.loads(args.geo_data))
 
@@ -188,9 +181,9 @@ def main():
 
     except Exception as e:
         if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
-            scripting.utils.exit_with_msg(traceback.format_exc(), prefix="")
+            scripting_args.exit_with_msg(traceback.format_exc(), prefix="")
         else:
-            scripting.utils.exit_with_msg(e.message)
+            scripting_args.exit_with_msg(e.message)
 
 if __name__ == "__main__":
     main()
