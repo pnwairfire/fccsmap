@@ -311,7 +311,11 @@ class FccsLookUp(object):
         # TODO: don't recompute total ignored if it was already computed,
         #   i.e. for Point or MultiPoint
         total_percent_ignored = self._compute_total_percent_ignored(stats)
-        if total_percent_ignored > 0.0:
+
+        if total_percent_ignored == 100.0:
+            stats['fuelbeds'] = {}
+
+        elif total_percent_ignored > 0.0:
             adjustment_factor = 100.0 / (100.0 - total_percent_ignored)
             # cast to list so that we can call pop within loop
             for fccs_id in list(stats.get('fuelbeds', {})):
@@ -320,4 +324,5 @@ class FccsLookUp(object):
                 else:
                     p = stats['fuelbeds'][fccs_id]['percent'] * adjustment_factor
                     stats['fuelbeds'][fccs_id]['percent'] = p
+
         return stats
