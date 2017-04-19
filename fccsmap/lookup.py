@@ -141,7 +141,7 @@ class FccsLookUp(object):
                 self.grid_resolution)
             stats = self._look_up(new_geo_data)
 
-            if self._has_high_percent_of_ignored(stat):
+            if self._has_high_percent_of_ignored(stats):
                 new_geo_data = self._transform_points(geo_data,
                     3*self.grid_resolution)
                 stats = self._look_up(new_geo_data)
@@ -302,7 +302,8 @@ class FccsLookUp(object):
         total_percent_ignored = self._compute_total_percent_ignored(stats)
         if total_percent_ignored > 0.0:
             adjustment_factor = 100.0 / (100.0 - total_percent_ignored)
-            for fccs_id in stats.get('fuelbeds'), {}:
+            # cast to list so that we can call pop within loop
+            for fccs_id in list(stats.get('fuelbeds', {})):
                 if fccs_id in self._ignored_fuelbeds:
                     stats['fuelbeds'].pop(fccs_id)
                 else:
