@@ -50,7 +50,7 @@ class FccsLookUp(object):
         }
     }
 
-    IGNORED_PERCENT_THRESHOLD = 99.9  # instead of 100.0, to account for rounding errors
+    IGNORED_PERCENT_RESAMPLING_THRESHOLD = 99.9  # instead of 100.0, to account for rounding errors
     IGNORED_FUELBEDS = ('0', '900')
 
     def __init__(self, **options):
@@ -63,12 +63,13 @@ class FccsLookUp(object):
          - fccs_fuelload_param -- name of variable in NetCDF file
          - grid_resolution -- length of grid cells in km
          - ignored_fuelbeds -- fuelbeds to ignore
-         - ignored_percent_threshold -- percentage of ignored fuelbeds which
-            should trigger resampling at larger; only plays a part in
-            Point and MultiPoint look-ups
+         - ignored_percent_resampling_threshold -- percentage of ignored
+            fuelbeds which should trigger resampling in larger area; only
+            plays a part in Point and MultiPoint look-ups
+         - no_sampling -- don't sample surrounding area for Point
+            and MultiPoint geometries
 
-
-        TODO: determine grid_resolution from netcdf file
+        TODO: determine grid_resolution from NetCDF file
         """
 
         # TODO: determine which combinations of file/param/version can be
@@ -89,8 +90,10 @@ class FccsLookUp(object):
 
         self._ignored_fuelbeds = options.get(
             'ignored_fuelbeds', self.IGNORED_FUELBEDS)
-        self._ignored_percent_threshold = options.get(
-            'ignored_percent_threshold', self.IGNORED_PERCENT_THRESHOLD)
+        self._ignored_percentre_sampling_threshold = options.get(
+            'ignored_percent_resampling_threshold',
+            self.IGNORED_PERCENT_RESAMPLING_THRESHOLD)
+        self._no_sampling  = options.get('no_sampling', False)
 
     ##
     ## Public Interface
@@ -136,7 +139,8 @@ class FccsLookUp(object):
         if hasattr(geo_data, 'capitalize'):
             geo_data = json.loads(geo_data)
 
-        if geo_data["type"] in ('Point', 'MultiPoint'):
+        if not self._no_sampling and geo_data["type"] in (
+                'Point', 'MultiPoint'):
             new_geo_data = self._transform_points(geo_data,
                 self.grid_resolution)
             stats = self._look_up(new_geo_data)
@@ -269,7 +273,7 @@ class FccsLookUp(object):
 
     def _has_high_percent_of_ignored(self, stats):
         return (self._compute_total_percent_ignored(stats) >=
-            self._ignored_percent_threshold)
+            self._ignored_percentre_sampling_threshold)
 
     def _compute_total_percent_ignored(self, stats):
         return sum([
