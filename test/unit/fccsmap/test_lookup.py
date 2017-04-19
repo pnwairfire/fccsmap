@@ -52,7 +52,7 @@ class TestFccsLookUp(object):
 
     def test_multipoint_in_water(self):
         geo_data = {
-            "type": "Point",
+            "type": "MultiPoint",
             # in lake chelan
             "coordinates": [
                 [-120.3606708, 48.0364064],
@@ -110,12 +110,60 @@ class TestFccsLookUp(object):
 
 class TestFccsLookUpTransformPoints(object):
 
+    def setup(self):
+        self._lookup = FccsLookUp()
+
     def test_point(self):
-        pass
+        geo_data = {
+            "type": "Point",
+            # hills east of Methow valley
+            "coordinates": [-119.877732, 48.4255591]
+        }
+        expected = {
+            'coordinates': [
+                [
+                    [
+                        [-119.89126896768474, 48.416550090990995],
+                        [-119.89126896768474, 48.43456810900901],
+                        [-119.86419503231525, 48.43456810900901],
+                        [-119.86419503231525, 48.416550090990995]
+                    ]
+                ]
+            ],
+            'type': 'MultiPolygon'
+        }
+        assert self._lookup._transform_points(geo_data, 1) == expected
 
     def test_multi_point(self):
-        pass
-
+        geo_data = {
+            "type": "MultiPoint",
+            "coordinates": [
+                [-119.877732, 48.4255591],
+                [-119.7, 48.5]
+            ]
+        }
+        expected = {
+            'coordinates': [
+                [
+                    [
+                        [-119.89126896768474, 48.416550090990995],
+                        [-119.89126896768474, 48.43456810900901],
+                        [-119.86419503231525, 48.43456810900901],
+                        [-119.86419503231525, 48.416550090990995]
+                    ]
+                ],
+                [
+                    [
+                        [-119.71355683559308, 48.490990990990994],
+                        [-119.71355683559308, 48.509009009009006],
+                        [-119.68644316440692, 48.509009009009006],
+                        [-119.68644316440692, 48.490990990990994]
+                    ]
+                ]
+            ],
+            'type': 'MultiPolygon'
+        }
+        assert self._lookup._transform_points(geo_data, 1) == expected
 
 class TestFccsLookUpHasHighPercentOfIgnored(object):
 
