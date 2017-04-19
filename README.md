@@ -158,10 +158,10 @@ First, install pip (with sudo if necessary):
 
     apt-get install python-pip
 
-Then, to install, for example, version v1.0.1, use the following (with
+Then, to install, for example, version v2.0.0, use the following (with
 sudo if necessary):
 
-    pip install --no-binary gdal --trusted-host pypi.smoke.airfire.org -i http://pypi.smoke.airfire.org/simple fccsmap==1.0.1
+    pip install --no-binary gdal --trusted-host pypi.smoke.airfire.org -i http://pypi.smoke.airfire.org/simple fccsmap==2.0.0
 
 See the Development > Install Dependencies > Notes section, above, for
 notes on resolving pip and gdal issues.
