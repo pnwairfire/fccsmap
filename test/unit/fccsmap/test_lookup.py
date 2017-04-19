@@ -5,6 +5,12 @@ from fccsmap.lookup import FccsLookUp
 
 class TestFccsLookUp(object):
     """Tests for FccsLookUp.look_up
+
+    NOTE: Test data were generated using FccsLookUp itself.
+    So, the TestFccsLookUp serves as a regression test, making sure
+    future updates don't break the existing behavior.
+    (The output data were spot-checked to ensure that the fuelbed do make
+    sense for each location.)
     """
 
     def setup(self):
@@ -16,7 +22,17 @@ class TestFccsLookUp(object):
             # hills east of Methow valley
             "coordinates": [-119.877732, 48.4255591]
         }
-        expected = {}
+        expected = {
+            'fuelbeds': {
+                '52': {
+                    'grid_cells': 4,
+                    'percent': 100.0
+                }
+            },
+           'sampled_area': 4014629.570946319,
+           'sampled_grid_cells': 4,
+           'units': 'm^2'
+        }
         assert self._lookup.look_up(geo_data) == expected
 
     def test_point_in_water(self):
@@ -25,7 +41,17 @@ class TestFccsLookUp(object):
             # in lake chelan
             "coordinates": [-120.3606708, 48.0364064]
         }
-        expected = {}
+        expected = {
+            'fuelbeds': {
+                '319': {'grid_cells': 4, 'percent': 18.18181818181818},
+                '41': {'grid_cells': 1, 'percent': 4.545454545454545},
+                '52': {'grid_cells': 10, 'percent': 45.45454545454545},
+                '60': {'grid_cells': 7, 'percent': 31.818181818181813}
+            },
+            'sampled_area': 36128384.2273902,
+            'sampled_grid_cells': 36,
+            'units': 'm^2'
+        }
         assert self._lookup.look_up(geo_data) == expected
 
     def test_multipoint_one(self):
@@ -36,7 +62,15 @@ class TestFccsLookUp(object):
                 [-119.8, 48.4]
             ]
         }
-        expected = {}
+        expected = {
+            'fuelbeds': {
+                '24': {'grid_cells': 4, 'percent': 80.0},
+                '52': {'grid_cells': 1, 'percent': 20.0}
+            },
+            'sampled_area': 4014605.673739771,
+            'sampled_grid_cells': 5,
+            'units': 'm^2'
+        }
         assert self._lookup.look_up(geo_data) == expected
 
     def test_multipoint_two(self):
@@ -47,7 +81,14 @@ class TestFccsLookUp(object):
                 [-119.0, 49.0]
             ]
         }
-        expected = {}
+        expected = {
+            'sampled_area': 8029771.678782582,
+            'fuelbeds': {
+                '4': {'grid_cells': 2, 'percent': 20.0},
+                '60': {'grid_cells': 2, 'percent': 20.0},
+                '52': {'grid_cells': 2, 'percent': 20.0},
+                '24': {'grid_cells': 4, 'percent': 40.0}
+            }, 'units': 'm^2', 'sampled_grid_cells': 10}
         assert self._lookup.look_up(geo_data) == expected
 
     def test_multipoint_in_water(self):
@@ -59,7 +100,17 @@ class TestFccsLookUp(object):
                 [-120.5059529, 48.1229493]
             ]
         }
-        expected = {}
+        expected = {
+            'sampled_area': 72257497.56205451,
+            'sampled_grid_cells': 72,
+            'units': 'm^2',
+            'fuelbeds': {
+                '319': {'grid_cells': 5, 'percent': 10.869565217391305},
+                '60': {'grid_cells': 7, 'percent': 15.217391304347826},
+                '52': {'grid_cells': 33, 'percent': 71.73913043478261},
+                '41': {'grid_cells': 1, 'percent': 2.1739130434782608}
+            }
+        }
         assert self._lookup.look_up(geo_data) == expected
 
     def test_polygon(self):
@@ -76,7 +127,32 @@ class TestFccsLookUp(object):
                 ]
             ]
         }
-        expected = {}
+        expected = {
+            'units': 'm^2',
+            'area': 8217580424.304997,
+            'grid_cells': 8219,
+            'fuelbeds': {
+                '237': {'percent': 10.356963298139767, 'grid_cells': 824},
+                '24': {'percent': 0.025138260432378077, 'grid_cells': 2},
+                '319': {'percent': 2.551533433886375, 'grid_cells': 203},
+                '41': {'percent': 2.7275012569130217, 'grid_cells': 217},
+                '305': {'percent': 0.4147812971342383, 'grid_cells': 33},
+                '60': {'percent': 4.462041226747108, 'grid_cells': 355},
+                '4': {'percent': 0.03770739064856712, 'grid_cells': 3},
+                '21': {'percent': 0.012569130216189038, 'grid_cells': 1},
+                '208': {'percent': 0.9049773755656108, 'grid_cells': 72},
+                '22': {'percent': 0.5656108597285068, 'grid_cells': 45},
+                '238': {'percent': 4.3740573152337845, 'grid_cells': 348},
+                '59': {'percent': 10.985419808949219, 'grid_cells': 874},
+                '9': {'percent': 11.65158371040724, 'grid_cells': 927},
+                '70': {'percent': 0.6033182503770739, 'grid_cells': 48},
+                '63': {'percent': 1.0809451985922571, 'grid_cells': 86},
+                '8': {'percent': 0.0628456510809452, 'grid_cells': 5},
+                '28': {'percent': 0.025138260432378077, 'grid_cells': 2},
+                '61': {'percent': 13.763197586726998, 'grid_cells': 1095},
+                '52': {'percent': 35.39467068878833, 'grid_cells': 2816}
+            }
+        }
         assert self._lookup.look_up(geo_data) == expected
 
     def test_multipolygon(self):
@@ -104,7 +180,89 @@ class TestFccsLookUp(object):
                 ]
             ]
         }
-        expected = {}
+        expected = {
+            "units": "m^2",
+            "grid_cells": 8220,
+            "fuelbeds": {
+                "208": {
+                    "grid_cells": 72,
+                    "percent": 0.9048636420761593
+                },
+                "8": {
+                    "grid_cells": 5,
+                    "percent": 0.06283775292195551
+                },
+                "305": {
+                    "grid_cells": 33,
+                    "percent": 0.4147291692849064
+                },
+                "28": {
+                    "grid_cells": 2,
+                    "percent": 0.025135101168782203
+                },
+                "41": {
+                    "grid_cells": 217,
+                    "percent": 2.727158476812869
+                },
+                "24": {
+                    "grid_cells": 2,
+                    "percent": 0.025135101168782203
+                },
+                "63": {
+                    "grid_cells": 86,
+                    "percent": 1.0808093502576348
+                },
+                "61": {
+                    "grid_cells": 1095,
+                    "percent": 13.761467889908257
+                },
+                "60": {
+                    "grid_cells": 355,
+                    "percent": 4.461480457458841
+                },
+                "237": {
+                    "grid_cells": 824,
+                    "percent": 10.355661681538267
+                },
+                "4": {
+                    "grid_cells": 3,
+                    "percent": 0.037702651753173305
+                },
+                "319": {
+                    "grid_cells": 203,
+                    "percent": 2.5512127686313937
+                },
+                "52": {
+                    "grid_cells": 2817,
+                    "percent": 35.402789996229735
+                },
+                "21": {
+                    "grid_cells": 1,
+                    "percent": 0.012567550584391102
+                },
+                "9": {
+                    "grid_cells": 927,
+                    "percent": 11.650119391730552
+                },
+                "238": {
+                    "grid_cells": 348,
+                    "percent": 4.373507603368103
+                },
+                "59": {
+                    "grid_cells": 874,
+                    "percent": 10.984039210757823
+                },
+                "22": {
+                    "grid_cells": 45,
+                    "percent": 0.5655397762975996
+                },
+                "70": {
+                    "grid_cells": 48,
+                    "percent": 0.6032424280507729
+                }
+            },
+            "area": 16273677189.8695
+        }
         assert self._lookup.look_up(geo_data) == expected
 
 
