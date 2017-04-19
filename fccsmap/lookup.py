@@ -166,7 +166,10 @@ class FccsLookUp(object):
         else:
             stats = self._look_up(geo_data)
 
-        return self._remove_ignored(stats)
+        stats = self._remove_ignored(stats)
+        stats = self._remove_insignificant(stats)
+
+        return stats
 
     ##
     ## Helper methods
@@ -306,7 +309,6 @@ class FccsLookUp(object):
             }
         }
 
-
     def _remove_ignored(self, stats):
         """Removes ignored fuelbeds and readjusts percentages so that they
         add up to 100.
@@ -319,7 +321,41 @@ class FccsLookUp(object):
             stats['fuelbeds'] = {}
 
         elif total_percent_ignored > 0.0:
-            adjustment_factor = 100.0 / (100.0 - total_percent_ignored)
+            stats = self._readjust_percentages(stats, total_percent_ignored)
+
+        return stats
+
+    INSIGNIFICANCE_THRESHOLD = 10.0
+
+    def _remove_insignificant(self, stats):
+        """Removes fuelbeds that make up an insignificant fraction of the
+        total fuelbed composition (i.e. those that cumulatively make up
+        less than INSIGNIFICANCE_THRESHOLD), and readjust percentages to that
+        they add up to 100.
+        """
+        sorted_fuelbeds = sorted(stats.get('fuelbeds', {}).items(),
+            key=lambda e: e[1]['percent'])
+        total_percentage_removed = 0.0
+        for fccs_id, f_dict in sorted_fuelbeds:
+            if (total_percentage_removed + f_dict['percent']
+                    < self.INSIGNIFICANCE_THRESHOLD):
+                total_percentage_removed += f_dict['percent']
+                stats['fuelbeds'].pop(fccs_id)
+
+        if total_percentage_removed >= 0.0:
+            stats = self._readjust_percentages(stats, total_percentage_removed)
+
+        return stats
+
+    def _readjust_percentages(self, stats, missing_percentage):
+        """Readjust fuelbed percentages so that they add up to 100%
+
+        Note: missing_percentage could easily be computed here, but
+        it's already computed before each call to this method, so it's
+        passed in to avoid redundant computation.
+        """
+        if stats.get('fuelbeds') and missing_percentage > 0:
+            adjustment_factor = 100.0 / (100.0 - missing_percentage)
             # cast to list so that we can call pop within loop
             for fccs_id in list(stats.get('fuelbeds', {})):
                 if fccs_id in self._ignored_fuelbeds:
