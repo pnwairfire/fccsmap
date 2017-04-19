@@ -119,20 +119,88 @@ class TestFccsLookUpTransformPoints(object):
 
 class TestFccsLookUpHasHighPercentOfIgnored(object):
 
+    def setup(self):
+        self._lookup = FccsLookUp()
+
     def test_one_good(self):
-        pass
+        stats = {
+            'fuelbeds': {
+                '41': {
+                    'percent': 100.0,
+                    'grid_cells': 1
+                }
+            },
+            'grid_cells': 10
+        }
+        assert self._lookup._has_high_percent_of_ignored(stats) == False
 
     def test_two_good(self):
-        pass
+        stats = {
+            'fuelbeds': {
+                '41': {
+                    'percent': 25.0,
+                    'grid_cells': 1
+                },
+                '60': {
+                    'percent': 75.0,
+                    'grid_cells': 3
+                }
+            },
+            'grid_cells': 10
+        }
+        assert self._lookup._has_high_percent_of_ignored(stats) == False
 
     def test_mixture(self):
-        pass
+        stats = {
+            'fuelbeds': {
+                '900': {
+                    'percent': 40.0,
+                    'grid_cells': 4
+                },
+                '0': {
+                    'percent': 20.0,
+                    'grid_cells': 2
+                },
+                '41': {
+                    'percent': 10.0,
+                    'grid_cells': 1
+                },
+                '60': {
+                    'percent': 30.0,
+                    'grid_cells': 3
+                }
+            },
+            'grid_cells': 10
+        }
+        assert self._lookup._has_high_percent_of_ignored(stats) == False
 
     def test_one_ignored(self):
-        pass
+        stats = {
+            'fuelbeds': {
+                '900': {
+                    'percent': 100.0,
+                    'grid_cells': 3
+                }
+            },
+            'grid_cells': 10
+        }
+        assert self._lookup._has_high_percent_of_ignored(stats) == True
 
-    def test_one_ignored(self):
-        pass
+    def test_two_ignored(self):
+        stats = {
+            'fuelbeds': {
+                '900': {
+                    'percent': 60.0,
+                    'grid_cells': 3
+                },
+                '0': {
+                    'percent': 40.0,
+                    'grid_cells': 2
+                }
+            },
+            'grid_cells': 10
+        }
+        assert self._lookup._has_high_percent_of_ignored(stats) == True
 
 
 class TestFccsLookupComputeTotalPercentIgnored(object):
@@ -204,7 +272,7 @@ class TestFccsLookupComputeTotalPercentIgnored(object):
         }
         assert self._lookup._compute_total_percent_ignored(stats) == 100.0
 
-    def test_one_ignored(self):
+    def test_two_ignored(self):
         stats = {
             'fuelbeds': {
                 '900': {
