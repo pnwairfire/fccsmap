@@ -653,3 +653,169 @@ class TestFccsLookupRemoveIgnored(object):
             "units": "m^2"
         }
         assert self._lookup._remove_ignored(stats) == expected
+
+
+class TestFccsLookupRemoveInsignificant(object):
+
+    def setup(self):
+        self._lookup = FccsLookUp()
+
+    def test_empty_fuelbeds(self):
+        stats = {
+            "fuelbeds": {},
+            "sampled_area": 1,
+            "sampled_grid_cells": 1,
+            "units": "m^2"
+        }
+        expected = {
+            "fuelbeds": {},
+            "sampled_area": 1,
+            "sampled_grid_cells": 1,
+            "units": "m^2"
+        }
+        assert self._lookup._remove_insignificant(stats) == expected
+
+    def test_none_removed(self):
+        stats = {
+            "fuelbeds": {
+                "32": {"percent": 50, "grid_cells": 2},
+                "41": {"percent": 50, "grid_cells": 2}
+            },
+            "sampled_area": 1,
+            "sampled_grid_cells": 1,
+            "units": "m^2"
+        }
+        expected = {
+            "fuelbeds": {
+                "32": {"percent": 50, "grid_cells": 2},
+                "41": {"percent": 50, "grid_cells": 2}
+            },
+            "sampled_area": 1,
+            "sampled_grid_cells": 1,
+            "units": "m^2"
+        }
+        assert self._lookup._remove_insignificant(stats) == expected
+
+    def test_two_removed(self):
+        stats = {
+            "fuelbeds": {
+                "24": {"percent": 48, "grid_cells": 2 },
+                "1": {"percent": 48, "grid_cells": 2},
+                "13": {"percent": 2, "grid_cells": 2},
+                "41": {"percent": 2, "grid_cells": 2}
+            },
+            "sampled_area": 1,
+            "sampled_grid_cells": 1,
+            "units": "m^2"
+        }
+        expected = {
+            "fuelbeds": {
+                "24": {"percent": 50, "grid_cells": 2},
+                "1": {"percent": 50, "grid_cells": 2}
+            },
+            "sampled_area": 1,
+            "sampled_grid_cells": 1,
+            "units": "m^2"
+        }
+        assert self._lookup._remove_insignificant(stats) == expected
+
+
+class TestFccsLookupReadjustPercentages(object):
+
+    def setup(self):
+        self._lookup = FccsLookUp()
+
+    def test_empty(self):
+        stats = {
+            "fuelbeds": {},
+            "sampled_area": 1,
+            "sampled_grid_cells": 1,
+            "units": "m^2"
+        }
+        expected = {
+            "fuelbeds": {},
+            "sampled_area": 1,
+            "sampled_grid_cells": 1,
+            "units": "m^2"
+        }
+        assert self._lookup._readjust_percentages(stats, 0) == expected
+
+    def test_one_none_adjusted(self):
+        stats = {
+            "fuelbeds": {
+                "32": {"percent": 100, "grid_cells": 2}
+            },
+            "sampled_area": 1,
+            "sampled_grid_cells": 1,
+            "units": "m^2"
+        }
+        expected = {
+            "fuelbeds": {
+                "32": {"percent": 100, "grid_cells": 2}
+            },
+            "sampled_area": 1,
+            "sampled_grid_cells": 1,
+            "units": "m^2"
+        }
+        assert self._lookup._readjust_percentages(stats, 0) == expected
+
+    def test_one_adjusted(self):
+        stats = {
+            "fuelbeds": {
+                "32": {"percent": 50, "grid_cells": 2}
+            },
+            "sampled_area": 1,
+            "sampled_grid_cells": 1,
+            "units": "m^2"
+        }
+        expected = {
+            "fuelbeds": {
+                "32": {"percent": 100, "grid_cells": 2}
+            },
+            "sampled_area": 1,
+            "sampled_grid_cells": 1,
+            "units": "m^2"
+        }
+        assert self._lookup._readjust_percentages(stats, 50) == expected
+
+    def test_multiple_none_adjusted(self):
+        stats = {
+            "fuelbeds": {
+                "32": {"percent": 50, "grid_cells": 2},
+                "41": {"percent": 50, "grid_cells": 2}
+            },
+            "sampled_area": 1,
+            "sampled_grid_cells": 1,
+            "units": "m^2"
+        }
+        expected = {
+            "fuelbeds": {
+                "32": {"percent": 50, "grid_cells": 2},
+                "41": {"percent": 50, "grid_cells": 2}
+            },
+            "sampled_area": 1,
+            "sampled_grid_cells": 1,
+            "units": "m^2"
+        }
+        assert self._lookup._readjust_percentages(stats, 0) == expected
+
+    def test_multiple_some_adjusted(self):
+        stats = {
+            "fuelbeds": {
+                "32": {"percent": 40, "grid_cells": 2},
+                "41": {"percent": 40, "grid_cells": 2}
+            },
+            "sampled_area": 1,
+            "sampled_grid_cells": 1,
+            "units": "m^2"
+        }
+        expected = {
+            "fuelbeds": {
+                "32": {"percent": 50, "grid_cells": 2},
+                "41": {"percent": 50, "grid_cells": 2}
+            },
+            "sampled_area": 1,
+            "sampled_grid_cells": 1,
+            "units": "m^2"
+        }
+        assert self._lookup._readjust_percentages(stats, 20) == expected
