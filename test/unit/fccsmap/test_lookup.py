@@ -153,7 +153,93 @@ class TestFccsLookupComputePercentages(object):
     def test(self):
         pass
 
-class TestFccsLookupRemovedIgnored(object):
+class TestFccsLookupRemoveIgnored(object):
 
-    def test(self):
-        pass
+    def setup(self):
+        self._lookup = FccsLookUp()
+
+    def test_no_ignored(self):
+        stats = {
+            "fuelbeds": {
+                "32": {
+                    "percent": 50,
+                    "grid_cells": 2
+                },
+                "41": {
+                    "percent": 50,
+                    "grid_cells": 2
+                }
+            },
+            "sampled_area": 1,
+            "sampled_grid_cells": 1,
+            "units": "m^2"
+        }
+        expected = {
+            "fuelbeds": {
+                "32": {
+                    "percent": 50,
+                    "grid_cells": 2
+                },
+                "41": {
+                    "percent": 50,
+                    "grid_cells": 2
+                }
+            },
+            "sampled_area": 1,
+            "sampled_grid_cells": 1,
+            "units": "m^2"
+        }
+        assert self._lookup._remove_ignored(stats) == expected
+
+    def test_all_ignored(self):
+        stats = {
+            "fuelbeds": {
+                "900": {
+                    "percent": 50,
+                    "grid_cells": 2
+                },
+                "0": {
+                    "percent": 50,
+                    "grid_cells": 2
+                }
+            },
+            "sampled_area": 1,
+            "sampled_grid_cells": 1,
+            "units": "m^2"
+        }
+        expected = {
+            "fuelbeds": {},
+            "sampled_area": 1,
+            "sampled_grid_cells": 1,
+            "units": "m^2"
+        }
+        assert self._lookup._remove_ignored(stats) == expected
+
+    def test_mixed(self):
+        stats = {
+            "fuelbeds": {
+                "900": {
+                    "percent": 50,
+                    "grid_cells": 2
+                },
+                "41": {
+                    "percent": 50,
+                    "grid_cells": 2
+                }
+            },
+            "sampled_area": 1,
+            "sampled_grid_cells": 1,
+            "units": "m^2"
+        }
+        expected = {
+            "fuelbeds": {
+                "41": {
+                    "percent": 100,
+                    "grid_cells": 2
+                }
+            },
+            "sampled_area": 1,
+            "sampled_grid_cells": 1,
+            "units": "m^2"
+        }
+        assert self._lookup._remove_ignored(stats) == expected

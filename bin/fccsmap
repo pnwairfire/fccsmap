@@ -139,7 +139,7 @@ Example calls:
           ]
         }}' | python -m json.tool|less
 
-  Single point with options
+  Single point with options (should return empty fuelbeds dict)
 
     $ {script_name} --log-level=DEBUG  \\
         --json-config-option ignored_fuelbeds='["900"]' \\
