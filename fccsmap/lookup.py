@@ -80,7 +80,8 @@ class FccsLookUp(object):
         """.format(self.OPTIONS_STRING)
 
         # TODO: determine which combinations of file/param/version can be
-        # specified and raise errors when appropriate
+        #   specified and raise errors when appropriate (including invalid
+        #   nonexisting versions)
 
         is_alaska = options.get('is_alaska', False)
         fccs_version = options.get('fccs_version') or '2'
