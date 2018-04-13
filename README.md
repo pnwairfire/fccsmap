@@ -81,7 +81,7 @@ or http:
 After installing the non-python dependencies (mentioned above), run the
 following to install required python packages:
 
-    pip install --trusted-host pypi.smoke.airfire.org -r requirements.txt
+    pip install -r requirements.txt
 
 #### Dev and test dependencies
 
@@ -161,7 +161,7 @@ First, install pip (with sudo if necessary):
 Then, to install, for example, version v2.1.0, use the following (with
 sudo if necessary):
 
-    pip install --no-binary gdal --trusted-host pypi.smoke.airfire.org -i http://pypi.smoke.airfire.org/simple fccsmap==2.1.0
+    pip install --no-binary gdal --extra-index https://pypi.airfire.org/simple fccsmap==2.1.0
 
 See the Development > Install Dependencies > Notes section, above, for
 notes on resolving pip and gdal issues.

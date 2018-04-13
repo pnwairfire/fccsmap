@@ -41,7 +41,7 @@ setup(
         "rasterstats==0.6.2"
     ],
     dependency_links=[
-        "https://pypi.smoke.airfire.org/simple/afscripting/",
+        "https://pypi.airfire.org/simple/afscripting/",
     ],
     tests_require=test_requirements
 )
