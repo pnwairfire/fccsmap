@@ -29,7 +29,7 @@ class TestFccsLookUp(object):
                     'percent': 100.0
                 }
             },
-           'sampled_area': 4014629.570946319,
+           'sampled_area': 4014629.570943463,
            'sampled_grid_cells': 4,
            'units': 'm^2'
         }
@@ -47,7 +47,7 @@ class TestFccsLookUp(object):
                 '52': {'grid_cells': 10, 'percent': 47.61904761904762},
                 '60': {'grid_cells': 7, 'percent': 33.33333333333333}
             },
-            'sampled_area': 36128384.2273902,
+            'sampled_area': 36128384.22738944,
             'sampled_grid_cells': 36,
             'units': 'm^2'
         }
@@ -66,7 +66,7 @@ class TestFccsLookUp(object):
                 '24': {'grid_cells': 4, 'percent': 80.0},
                 '52': {'grid_cells': 1, 'percent': 20.0}
             },
-            'sampled_area': 4014605.673739771,
+            'sampled_area': 4014605.673742279,
             'sampled_grid_cells': 5,
             'units': 'm^2'
         }
@@ -81,7 +81,7 @@ class TestFccsLookUp(object):
             ]
         }
         expected = {
-            'sampled_area': 8029771.678782582,
+            'sampled_area': 8029771.678785425,
             'fuelbeds': {
                 '4': {'grid_cells': 2, 'percent': 20.0},
                 '60': {'grid_cells': 2, 'percent': 20.0},
@@ -100,7 +100,7 @@ class TestFccsLookUp(object):
             ]
         }
         expected = {
-            'sampled_area': 72257497.56205451,
+            'sampled_area': 72257497.56205192,
             'sampled_grid_cells': 72,
             'units': 'm^2',
             'fuelbeds': {
@@ -127,7 +127,7 @@ class TestFccsLookUp(object):
         }
         expected = {
             'units': 'm^2',
-            'area': 8217580424.304997,
+            'area': 8217580424.304947,
             'grid_cells': 8219,
             'fuelbeds': {
                 '237': {'grid_cells': 824, 'percent': 11.382787677856056},
@@ -178,7 +178,7 @@ class TestFccsLookUp(object):
                 '61': {'grid_cells': 1095, 'percent': 15.124309392265191},
                 '9': {'grid_cells': 927, 'percent': 12.803867403314916}
             },
-            "area": 16273677189.8695
+            "area": 16273677189.869366
         }
         assert self._lookup.look_up(geo_data) == expected
 
