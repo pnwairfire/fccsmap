@@ -33,9 +33,6 @@ setup(
     install_requires=[
         "afscripting>=2.0.0",
         # Note: numpy and gdal must now be installed manually beforehand
-        #"numpy==1.11.1",
-        #"pygdal==1.11.2.1",
-        #"gdal==1.11.2",
         "shapely==1.7.1",
         "pyproj==3.0.0.post1",
         "rasterstats==0.15.0"

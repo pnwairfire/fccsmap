@@ -10,17 +10,18 @@ provisional; use at own risk.***
 ## Python 2 and 3 Support
 
 This package was originally developed to support python 2.7, but has since
-been refactored to support 3.5. Attempts to support both 2.7 and 3.5 have
-been made but are not guaranteed.
+been refactored to support 3.5 and 3.8. Attempts to support both 2.7 and 3.5
+have been made but are not guaranteed.
 
 ## External Dependencies
 
 Whether cloning the repo or installing with pip, you'll first need to
-manually install numpy, gdal, proj, and netcdf, which fccsmap depends on.  These
-instructions assume you already have python and pip installed, as well as
-C and C++ compilers, etc.
+manually install numpy, gdal, proj, and netcdf, which fccsmap depends on.
 
 ### Mac
+
+These instructions assume you already have python and pip installed,
+as well as C and C++ compilers, etc.
 
 On a mac, using [Homebrew](http://brew.sh/):
 
@@ -42,7 +43,11 @@ on your platform.
 Note that another source for Open Source GIS packages is
 http://www.kyngchaos.com/software/unixport.
 
-### Ubuntu, 12.04 LTS (precise)
+### Ubuntu
+
+These instructions assume you already have C and C++ compilers, etc. installed
+
+#### Ubuntu, 12.04 LTS (precise)
 
     sudo apt-get update
     sudo apt-get install -y python3 python3-dev python3-pip
@@ -52,7 +57,7 @@ http://www.kyngchaos.com/software/unixport.
     sudo apt-get install -y python3-numpy python3-gdal
     sudo apt-get install -y libxml2-dev libxslt1-dev
 
-### Ubuntu, 16.04 LTS (Xenial)
+#### Ubuntu, 16.04 LTS (Xenial)
 
     sudo apt-get update
     sudo apt-get install -y python3 python3-dev python3-pip
@@ -61,6 +66,24 @@ http://www.kyngchaos.com/software/unixport.
     sudo apt-get install -y libgdal-dev
     sudo apt-get install -y python3-numpy python3-gdal
     sudo apt-get install -y libxml2-dev libxslt1-dev
+
+#### Ubuntu 20.04 LTS
+
+    sudo apt-get update && sudo apt-get install -y \
+        python3 python3-dev python3-pip \
+        libnetcdf-dev libproj-dev \
+        libgdal-dev \
+        python3-numpy python3-gdal \
+        libxml2-dev libxslt1-dev
+
+### pyenv on ubuntu
+
+If using pyenv, you'll need to install numpy and gdal with pip:
+
+    pip install numpy
+    export CPLUS_INCLUDE_PATH=/usr/include/gdal
+    export CPLUS_INCLUDE_PATH=/usr/include/gdal
+    pip install gdal==`gdal-config --version`
 
 ## Development
 
@@ -76,19 +99,12 @@ or http:
 
 ### Install Python Dependencies
 
-#### Main dependencies
-
 After installing the non-python dependencies (mentioned above), run the
 following to install required python packages:
 
-    pip install -r requirements.txt
-
-#### Dev and test dependencies
-
-Run the following to install packages required for development and testing:
-
-    pip install -r requirements-test.txt
-    pip install -r requirements-dev.txt
+    pip3 install -r requirements.txt
+    pip3 install -r requirements-test.txt
+    pip3 install -r requirements-dev.txt
 
 #### Notes
 
