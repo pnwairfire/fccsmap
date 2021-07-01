@@ -38,6 +38,11 @@ OPTIONAL_ARGS = [
             'ex. \'{"type": "MultiPolygon","coordinates": [[[[-121.5212, 48.3082],[-121.5215, 48.3069],[-121.5211, 48.3095],[-121.5212, 48.3082]]],[[[-121.5042, 48.3242],[-121.5045, 48.3228],[-121.5041, 48.3255],[-121.5042, 48.3242]]]]}\''
     },
     {
+        'short': '-f',
+        'long': '--geo-data-file',
+        'help': 'json-formated geometry vector data in a separate file'
+    },
+    {
         'short': "-v",
         'long': '--version',
         'dest': 'version',
@@ -162,9 +167,9 @@ def main():
         epilog=EPILOG_STR, pre_validation=output_version)
 
     if 1 != sum([int(not not e) for e in
-            [args.indices, args.geo_data]]):
+            [args.indices, args.geo_data, args.geo_data_file]]):
         scripting_args.exit_with_msg(
-            "Specify either '-i'/'--indices', or '-g'/'--geo-data'",
+            "Specify either '-i'/'--indices', '-g'/'--geo-data', or '-f'/'--geo-data-file'",
             extra_output=lambda: parser.print_help())
 
     try:
@@ -175,7 +180,13 @@ def main():
             raise NotImplementedError(
                 "Looking up fuelbeds by grid indices not supported")
         else:
-            data = fccs_lookup.look_up(json.loads(args.geo_data))
+            if args.geo_data_file:
+                with open(args.geo_data_file) as f:
+                    input_data = f.read()
+            else:
+                input_data = args.geo_data
+
+            data = fccs_lookup.look_up(json.loads(input_data))
 
         sys.stdout.write(json.dumps(data))
 
