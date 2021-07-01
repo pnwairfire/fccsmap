@@ -9,8 +9,8 @@ provisional; use at own risk.***
 
 ## Python 2 and 3 Support
 
-This package was originally developed to support python 2.7, but has since
-been refactored to support 3.5 and 3.8. Attempts to support both 2.7 and 3.5
+This package was originally developed to support python 2.7 and then 3.5, but
+has since been refactored to support 3.8. Attempts to support both 2.7 and 3.5
 have been made but are not guaranteed.
 
 ## External Dependencies
