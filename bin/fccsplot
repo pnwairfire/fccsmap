@@ -66,21 +66,21 @@ Example calls:
 
   Single point near Snoqualmie pass
 
-    $ {script_name} --log-level=DEBUG -g '{{
+    $ {script_name} --log-level=INFO -g '{{
           "type": "Point",
           "coordinates": [-121.4522115, 47.4316976]
         }}'
 
-  Single point in Lake Chelan
+  Single point in Lake Chelan, with expanded neighborhood and using FCCS v1
 
-    $ {script_name} --log-level=DEBUG -g '{{
+    $ {script_name} --log-level=INFO -g '{{
           "type": "Point",
           "coordinates": [-120.3606708, 48.0364064]
-        }}'
+        }}' -n 10 --config-option fccs_version=2
 
   Area around Snoqualmie pass
 
-    $ {script_name} --log-level=DEBUG -g '{{
+    $ {script_name} --log-level=INFO -g '{{
           "type": "Polygon",
           "coordinates": [
             [
