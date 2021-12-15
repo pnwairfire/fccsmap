@@ -143,8 +143,14 @@ def plot(geo_data, fccs_lookup, neighborhood_dimensions_factor):
         reduced_file = os.path.join(tmpdirname, 'reduced.tff')
         translate_cmd = ["gdal_translate", "-projwin",
             str(min_x), str(max_y), str(max_x), str(min_y),
-            "-of", "GTiff", fccs_lookup.filename, reduced_file]
-        subprocess.run(translate_cmd)
+            "-of", "GTiff", f"NETCDF:{fccs_lookup.filename}:{fccs_lookup.param}",
+            reduced_file]
+        r = subprocess.run(translate_cmd)
+        if r.returncode:
+            # TODO: capture stderr when running and output it here
+            logging.error("gdal_translate returne error code %s", r.returncode)
+            sys.exit(1)
+
         reduced_dataset = gdal.Open(reduced_file)
         data = reduced_dataset.GetRasterBand(1).ReadAsArray()
         fig, ax = plt.subplots()
