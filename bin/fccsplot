@@ -42,6 +42,13 @@ OPTIONAL_ARGS = [
         'long': '--geo-data-file',
         'help': 'json-formated geometry vector data in a separate file'
     },
+    {
+        'short': '-n',
+        'long': '--neighborhood-dimensions-factor',
+        'help': 'expand (or reduce) dimensions of plotted area by this factor',
+        'type': int
+
+    }
 ]
 
 # Note: scripting_args.parse_args adds logging and configuration related options
@@ -107,7 +114,14 @@ def convert_point_to_polygon(fccs_lookup, geo_data):
         geo_data = fccs_lookup._transform_points(geo_data, 10) #fccs_lookup.grid_resolution)
     return geo_data
 
-def plot(geo_data, fccs_lookup):
+def expand(min_val, max_val, neighborhood_dimensions_factor):
+    center = (max_val + min_val) / 2
+    delta_from_center = ((max_val-min_val) / 2) * neighborhood_dimensions_factor
+    max_val = center + delta_from_center
+    min_val = center - delta_from_center
+    return min_val, max_val
+
+def plot(geo_data, fccs_lookup, neighborhood_dimensions_factor):
     s = geometry.shape(geo_data)
     s = ops.transform(fccs_lookup.projector, s)
 
@@ -119,6 +133,13 @@ def plot(geo_data, fccs_lookup):
         min_x = min(s.bounds[0],s.bounds[2])
         max_y = max(s.bounds[1],s.bounds[3])
         min_y = min(s.bounds[1],s.bounds[3])
+        logging.info(f"x,y bounds (before any expansion): {min_x}, {max_x}  {min_y},{max_y}")
+
+        if neighborhood_dimensions_factor and neighborhood_dimensions_factor != 1:
+            min_x, max_x = expand(min_x, max_x, neighborhood_dimensions_factor)
+            min_y, max_y = expand(min_y, max_y, neighborhood_dimensions_factor)
+        logging.info(f"New x,y ranges: {min_x}, {max_x}  {min_y},{max_y}")
+
         reduced_file = os.path.join(tmpdirname, 'reduced.tff')
         translate_cmd = ["gdal_translate", "-projwin",
             str(min_x), str(max_y), str(max_x), str(min_y),
@@ -129,7 +150,7 @@ def plot(geo_data, fccs_lookup):
         fig, ax = plt.subplots()
         ax.matshow(data, cmap='ocean')
         for (i, j), z in np.ndenumerate(data):
-            ax.text(j, i, '{:0.1f}'.format(z), ha='center', va='center')
+            ax.text(j, i, '{}'.format(z), ha='center', va='center')
 
         # TODO:  somehoy plot polygon in geo_data over fccs grid
 
@@ -157,7 +178,7 @@ def main():
         geo_data = json.loads(geo_data)
         geo_data = convert_point_to_polygon(fccs_lookup, geo_data)
 
-        plot(geo_data, fccs_lookup)
+        plot(geo_data, fccs_lookup, args.neighborhood_dimensions_factor)
 
     except Exception as e:
         if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
