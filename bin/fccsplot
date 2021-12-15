@@ -111,7 +111,7 @@ Example calls:
 
 def convert_point_to_polygon(fccs_lookup, geo_data):
     if geo_data["type"] in ('Point', 'MultiPoint'):
-        geo_data = fccs_lookup._transform_points(geo_data, 10) #fccs_lookup.grid_resolution)
+        geo_data = fccs_lookup._transform_points(geo_data, 0.5) #fccs_lookup.grid_resolution)
     return geo_data
 
 def expand(min_val, max_val, neighborhood_dimensions_factor):
