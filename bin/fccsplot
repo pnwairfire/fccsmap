@@ -17,7 +17,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from afscripting import args as scripting_args
 from functools import reduce
-#from netCDF4 import Dataset
 from osgeo import gdal
 from shapely import ops, geometry
 
@@ -95,19 +94,6 @@ Example calls:
 
  """.format(options_str=lookup.FccsLookUp.OPTIONS_STRING,
     script_name=sys.argv[0])
-
-# class data_set(object):
-
-#     def __init__(self, file_name):
-#         self.file_name = file_name
-
-#     def __enter__(self):
-#         self.ds = Dataset(self.file_name, mode='r')
-#         return self.ds
-
-#     def __exit__(self, e_type, value, tb):
-#         self.ds.close()
-
 
 def convert_point_to_polygon(fccs_lookup, geo_data):
     if geo_data["type"] in ('Point', 'MultiPoint'):
