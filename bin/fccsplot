@@ -35,17 +35,16 @@ OPTIONAL_ARGS = [
         'short': '-g',
         'long': '--geo-data',
         'help': 'json-formated geometry vector data; '
-            'ex. \'{"type": "MultiPolygon","coordinates": [[[[-121.5212, 48.3082],[-121.5215, 48.3069],[-121.5211, 48.3095],[-121.5212, 48.3082]]],[[[-121.5042, 48.3242],[-121.5045, 48.3228],[-121.5041, 48.3255],[-121.5042, 48.3242]]]]}\''
+            'ex. \'{"type": "Polygon","coordinates": [[[-121.5212, 48.3082],[-121.5215, 48.3069],[-121.5211, 48.3095],[-121.5212, 48.3082]]]}\''
     },
     {
         'short': '-f',
         'long': '--geo-data-file',
         'help': 'json-formated geometry vector data in a separate file'
-    }
+    },
 ]
 
-# Note: scripting_args.parse_args adds logging and configuration related
-# options
+# Note: scripting_args.parse_args adds logging and configuration related options
 
 
 USAGE = "usage: %prog [options] <id> [<id> ...]"
@@ -103,46 +102,12 @@ Example calls:
 #         self.ds.close()
 
 
-def get_file_name(args):
-
-    # TODO: return pathname to .nc file based on config params
-    #   (version 1 vs 2; alaska or now)
-    repo_root = os.path.dirname(__file__)
-    return os.path.abspath(f'{repo_root}/../fccsmap/data/fccs2_fuelload.nc')
-
-# def get_bounds(geo_data):
-#     # get minimal lat,lng bounds that include input data geometry.
-#     # geometry.shape(geo_data).bounds is of the form:
-#     #   (-121.4522115, 47.4316976, -121.4522115, 47.4316976)
-#     bounds = geometry.shape(geo_data).bounds
-
-#     # If a point, set bounds to box around point
-#     bounds = list(bounds)
-#     if bounds[0] == bounds[2]:
-#         bounds[0] -= 0.01
-#         bounds[2] += 0.01
-#     if bounds[1] == bounds[3]:
-#         bounds[1] -= 0.01
-#         bounds[3] += 0.01
-
-#     return bounds
-
 def convert_point_to_polygon(fccs_lookup, geo_data):
     if geo_data["type"] in ('Point', 'MultiPoint'):
         geo_data = fccs_lookup._transform_points(geo_data, 10) #fccs_lookup.grid_resolution)
     return geo_data
 
 def plot(geo_data, fccs_lookup):
-
-    #bounds = get_bounds(json.loads(geo_data))
-
-    # TODO: use ncks and ncdump, and rename this script and any
-    #   refernence to 'plot'
-    #   with 'dump'
-    #     1. determing x,y ranges given lat, lng bounds
-    #     2. use ncks to gernerate new .nc filw with reduced data; e.g.
-    #        ncks -d x,247,249d y,205,207 fccs2_fuelload.nc /tmp/reduced.nc
-    #     3. use ncdumps to dump data of that reduced file
     s = geometry.shape(geo_data)
     s = ops.transform(fccs_lookup.projector, s)
 
@@ -165,6 +130,8 @@ def plot(geo_data, fccs_lookup):
         ax.matshow(data, cmap='ocean')
         for (i, j), z in np.ndenumerate(data):
             ax.text(j, i, '{:0.1f}'.format(z), ha='center', va='center')
+
+        # TODO:  somehoy plot polygon in geo_data over fccs grid
 
         plt.show()
 
@@ -189,9 +156,6 @@ def main():
             geo_data = args.geo_data
         geo_data = json.loads(geo_data)
         geo_data = convert_point_to_polygon(fccs_lookup, geo_data)
-
-        # with data_set(get_file_name(args)) as ds:
-        #     plot(ds, geo_data, fccs_lookup)
 
         plot(geo_data, fccs_lookup)
 
