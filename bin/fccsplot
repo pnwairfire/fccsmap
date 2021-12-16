@@ -45,7 +45,8 @@ OPTIONAL_ARGS = [
         'short': '-n',
         'long': '--neighborhood-dimensions-factor',
         'help': 'expand (or reduce) dimensions of plotted area by this factor',
-        'type': int
+        'type': int,
+        'default': 4
 
     },
     {
