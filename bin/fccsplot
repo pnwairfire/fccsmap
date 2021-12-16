@@ -178,12 +178,20 @@ def plot(geo_shape, bounding_shape, fccs_lookup, neighborhood_dimensions_factor)
 
         reduced_dataset = gdal.Open(reduced_file)
         data = reduced_dataset.GetRasterBand(1).ReadAsArray()
-        # TODO: get min_x, max_x, min_y, max_y of extracted data, and
-        #   use them when plotting input data, below
-        #   (the min_x, etc. specifed in call to gdal_translate can cut
-        #   through grid cells, but what's drawn in ax.text are the full
-        #   grid cells. We need to account for this when plotting input
-        #   geo data)
+
+        # The min_x, etc. specifed in call to gdal_translate can cut
+        # through grid cells, but what's drawn in ax.text are the full
+        # grid cells. So, we need to account for this when plotting input
+        # geo data) by getting the min_x, max_x, min_y, max_y of the extracted
+        # data, and using them when plotting input data, below
+        ulx, xres, xskew, uly, yskew, yres  = reduced_dataset.GetGeoTransform()
+        lrx = ulx + (reduced_dataset.RasterXSize * xres)
+        lry = uly + (reduced_dataset.RasterYSize * yres)
+        min_x = ulx
+        max_x = lrx
+        min_y = lry
+        max_y = uly
+
         fig, ax = plt.subplots()
         ax.matshow(data, cmap='ocean')
         for (i, j), z in np.ndenumerate(data):
