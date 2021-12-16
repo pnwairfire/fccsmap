@@ -95,10 +95,28 @@ Example calls:
  """.format(options_str=lookup.FccsLookUp.OPTIONS_STRING,
     script_name=sys.argv[0])
 
-def convert_point_to_polygon(fccs_lookup, geo_data):
+def load_geo_data(args):
+    if args.geo_data_file:
+        with open(args.geo_data_file) as f:
+            geo_data = f.read()
+    else:
+        geo_data = args.geo_data
+    return json.loads(geo_data)
+
+def get_shape(geo_data, fccs_lookup):
+    shape = geometry.shape(geo_data)
+    return ops.transform(fccs_lookup.projector, shape)
+
+def get_shapes(fccs_lookup, geo_data):
+    geo_shape = get_shape(geo_data, fccs_lookup)
     if geo_data["type"] in ('Point', 'MultiPoint'):
-        geo_data = fccs_lookup._transform_points(geo_data, 0.5) #fccs_lookup.grid_resolution)
-    return geo_data
+        bounding_shape = get_shape(fccs_lookup._transform_points(geo_data, 0.5),
+            fccs_lookup) #fccs_lookup.grid_resolution)
+    else:
+        # TODO: replace with minimal polygon containing all coordinates
+        bounding_shape = geo_shape
+
+    return geo_shape, bounding_shape
 
 def expand(min_val, max_val, neighborhood_dimensions_factor):
     center = (max_val + min_val) / 2
@@ -107,18 +125,37 @@ def expand(min_val, max_val, neighborhood_dimensions_factor):
     min_val = center - delta_from_center
     return min_val, max_val
 
-def plot(geo_data, fccs_lookup, neighborhood_dimensions_factor):
-    s = geometry.shape(geo_data)
-    s = ops.transform(fccs_lookup.projector, s)
+def convert_xy(xy, min_x, max_x, min_y, max_y, len_x, len_y):
+    new_x = [((x - min_x) / (max_x - min_x)) * len_x for x in xy[0]]
+    new_y = [((y - min_y) / (max_y - min_y)) * len_y for y in xy[1]]
+
+    return (new_x, new_y)
+
+def plot_geoms(shape, min_x, max_x, min_y, max_y, len_x, len_y):
+    if hasattr(shape, 'geoms'):
+        for geom in shape.geoms:
+            #axs.fill(xs, ys, alpha=0.5, fc='r', ec='none')
+            xy = convert_xy(geom.exterior.xy, min_x, max_x, min_y, max_y,
+                len_x, len_y)
+            plt.plot(*xy)
+    elif hasattr(shape, 'exterior'):
+        xy = convert_xy(shape.exterior.xy, min_x, max_x, min_y, max_y,
+            len_x, len_y)
+        plt.plot(*xy)
+
+    # TODO: else plot point
+
+
+def plot(geo_shape, bounding_shape, fccs_lookup, neighborhood_dimensions_factor):
 
     with tempfile.TemporaryDirectory() as tmpdirname:
         # using gdal_translate to extract data. e.g.
         #  gdal_translate -projwin -1921306.7467230938 2984866.5269676857 -1896597.2850769295 2960331.6517833835 -of GTiff fccs2_fuelload.nc reduced.tif
         #  gdal_translate -projwin -1921306.7467230938 2984866.5269676857 -1896597.2850769295 2960331.6517833835 -of NetCDF fccs2_fuelload.nc reduced.nc
-        max_x = max(s.bounds[0],s.bounds[2])
-        min_x = min(s.bounds[0],s.bounds[2])
-        max_y = max(s.bounds[1],s.bounds[3])
-        min_y = min(s.bounds[1],s.bounds[3])
+        max_x = max(bounding_shape.bounds[0], bounding_shape.bounds[2])
+        min_x = min(bounding_shape.bounds[0], bounding_shape.bounds[2])
+        max_y = max(bounding_shape.bounds[1], bounding_shape.bounds[3])
+        min_y = min(bounding_shape.bounds[1], bounding_shape.bounds[3])
         logging.info(f"x,y bounds (before any expansion): {min_x}, {max_x}  {min_y},{max_y}")
 
         if neighborhood_dimensions_factor and neighborhood_dimensions_factor != 1:
@@ -144,7 +181,10 @@ def plot(geo_data, fccs_lookup, neighborhood_dimensions_factor):
         for (i, j), z in np.ndenumerate(data):
             ax.text(j, i, '{}'.format(z), ha='center', va='center')
 
-        # TODO:  somehoy plot polygon in geo_data over fccs grid
+        len_x = len(data)
+        len_y = len(data[0])
+        plot_geoms(bounding_shape, min_x, max_x, min_y, max_y, len_x, len_y)
+        plot_geoms(geo_shape, min_x, max_x, min_y, max_y, len_x, len_y)
 
         plt.show()
 
@@ -161,16 +201,9 @@ def main():
 
     try:
         fccs_lookup = lookup.FccsLookUp(**(args.config_options or {}))
-
-        if args.geo_data_file:
-            with open(args.geo_data_file) as f:
-                geo_data = f.read()
-        else:
-            geo_data = args.geo_data
-        geo_data = json.loads(geo_data)
-        geo_data = convert_point_to_polygon(fccs_lookup, geo_data)
-
-        plot(geo_data, fccs_lookup, args.neighborhood_dimensions_factor)
+        geo_data = load_geo_data(args)
+        geo_shape, bounding_shape = get_shapes(fccs_lookup, geo_data)
+        plot(geo_shape, bounding_shape, fccs_lookup, args.neighborhood_dimensions_factor)
 
     except Exception as e:
         if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
