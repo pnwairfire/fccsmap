@@ -137,7 +137,7 @@ def plot_geoms(shape, min_x, max_x, min_y, max_y, len_x, len_y):
     if hasattr(shape, 'geoms'):
         xys = [geom.exterior.xy for geom in shape.geoms]
     elif hasattr(shape, 'exterior'):
-        xy = [shape.exterior.xy]
+        xys = [shape.exterior.xy]
     # TODO: else support any other shape?
 
     for xy in xys:
