@@ -165,10 +165,10 @@ def plot(geo_shape, bounding_shape, fccs_lookup, neighborhood_dimensions_factor)
             min_y, max_y = expand(min_y, max_y, neighborhood_dimensions_factor)
         logging.info(f"New x,y ranges: {min_x}, {max_x}  {min_y},{max_y}")
 
-        reduced_file = os.path.join(tmpdirname, 'reduced.tff')
+        reduced_file = os.path.join(tmpdirname, 'reduced.nc')
         translate_cmd = ["gdal_translate", "-projwin",
             str(min_x), str(max_y), str(max_x), str(min_y),
-            "-of", "GTiff", f"NETCDF:{fccs_lookup.filename}:{fccs_lookup.param}",
+            "-of", "NetCDF", f"NETCDF:{fccs_lookup.filename}:{fccs_lookup.param}",
             reduced_file]
         r = subprocess.run(translate_cmd)
         if r.returncode:
