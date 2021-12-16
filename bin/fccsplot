@@ -126,22 +126,24 @@ def expand(min_val, max_val, neighborhood_dimensions_factor):
     return min_val, max_val
 
 def convert_xy(xy, min_x, max_x, min_y, max_y, len_x, len_y):
-    new_x = [((x - min_x) / (max_x - min_x)) * len_x for x in xy[0]]
-    new_y = [((y - min_y) / (max_y - min_y)) * len_y for y in xy[1]]
+    new_x = [(((x - min_x) / (max_x - min_x)) * len_x) - 0.5 for x in xy[0]]
+    new_y = [(((y - min_y) / (max_y - min_y)) * len_y) - 0.5 for y in xy[1]]
 
     return (new_x, new_y)
 
 def plot_geoms(shape, min_x, max_x, min_y, max_y, len_x, len_y):
+    xys = []
+
     if hasattr(shape, 'geoms'):
-        for geom in shape.geoms:
-            #axs.fill(xs, ys, alpha=0.5, fc='r', ec='none')
-            xy = convert_xy(geom.exterior.xy, min_x, max_x, min_y, max_y,
-                len_x, len_y)
-            plt.plot(*xy)
+        xys = [geom.exterior.xy for geom in shape.geoms]
     elif hasattr(shape, 'exterior'):
-        xy = convert_xy(shape.exterior.xy, min_x, max_x, min_y, max_y,
-            len_x, len_y)
-        plt.plot(*xy)
+        xy = [shape.exterior.xy]
+    # TODO: else support any other shape?
+
+    for xy in xys:
+        #axs.fill(xs, ys, alpha=0.5, fc='r', ec='none')
+        xy = convert_xy(xy, min_x, max_x, min_y, max_y, len_x, len_y)
+        plt.plot(*xy, color='red')
 
     # TODO: else plot point
 
@@ -176,13 +178,19 @@ def plot(geo_shape, bounding_shape, fccs_lookup, neighborhood_dimensions_factor)
 
         reduced_dataset = gdal.Open(reduced_file)
         data = reduced_dataset.GetRasterBand(1).ReadAsArray()
+        # TODO: get min_x, max_x, min_y, max_y of extracted data, and
+        #   use them when plotting input data, below
+        #   (the min_x, etc. specifed in call to gdal_translate can cut
+        #   through grid cells, but what's drawn in ax.text are the full
+        #   grid cells. We need to account for this when plotting input
+        #   geo data)
         fig, ax = plt.subplots()
         ax.matshow(data, cmap='ocean')
         for (i, j), z in np.ndenumerate(data):
             ax.text(j, i, '{}'.format(z), ha='center', va='center')
 
-        len_x = len(data)
-        len_y = len(data[0])
+        len_y = len(data)
+        len_x = len(data[0])
         plot_geoms(bounding_shape, min_x, max_x, min_y, max_y, len_x, len_y)
         plot_geoms(geo_shape, min_x, max_x, min_y, max_y, len_x, len_y)
 
