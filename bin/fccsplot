@@ -47,6 +47,11 @@ OPTIONAL_ARGS = [
         'help': 'expand (or reduce) dimensions of plotted area by this factor',
         'type': int
 
+    },
+    {
+        'long': '--plot-geo-data',
+        'action': 'store_true',
+        'help': 'Overlay geo data over fccs grid in plot image'
     }
 ]
 
@@ -126,19 +131,31 @@ def expand(min_val, max_val, neighborhood_dimensions_factor):
     return min_val, max_val
 
 def convert_xy(xy, min_x, max_x, min_y, max_y, len_x, len_y):
-    new_x = [(((x - min_x) / (max_x - min_x)) * len_x) - 0.5 for x in xy[0]]
-    new_y = [(((y - min_y) / (max_y - min_y)) * len_y) - 0.5 for y in xy[1]]
+    def _(v, min_v, max_v, len_v, flip):
+        new_v = (((v - min_v) / (max_v - min_v)) * len_v)
+        if flip:
+            new_v = len_v - new_v
+        else:
+            new_v = new_v
+        new_v -= 0.5
+
+        return new_v
+
+    new_x = [_(x, min_x, max_x, len_x, False) for x in xy[0]]
+    new_y = [_(y, min_y, max_y, len_y, True) for y in xy[1]]
 
     return (new_x, new_y)
 
 def plot_geoms(shape, min_x, max_x, min_y, max_y, len_x, len_y):
     xys = []
 
-    if hasattr(shape, 'geoms'):
+    if shape.type == 'MultiPolygon':
         xys = [geom.exterior.xy for geom in shape.geoms]
-    elif hasattr(shape, 'exterior'):
+    elif shape.type == 'Polygon':
         xys = [shape.exterior.xy]
-    # TODO: else support any other shape?
+    elif shape.type == 'Point':
+        xys = [shape.xy]
+    # TODO: else support any other shape (e.g. MultiPoint?
 
     for xy in xys:
         #axs.fill(xs, ys, alpha=0.5, fc='r', ec='none')
@@ -148,7 +165,8 @@ def plot_geoms(shape, min_x, max_x, min_y, max_y, len_x, len_y):
     # TODO: else plot point
 
 
-def plot(geo_shape, bounding_shape, fccs_lookup, neighborhood_dimensions_factor):
+def plot(geo_shape, bounding_shape, fccs_lookup,
+        neighborhood_dimensions_factor, plot_geo_data):
 
     with tempfile.TemporaryDirectory() as tmpdirname:
         # using gdal_translate to extract data. e.g.
@@ -200,7 +218,8 @@ def plot(geo_shape, bounding_shape, fccs_lookup, neighborhood_dimensions_factor)
         len_y = len(data)
         len_x = len(data[0])
         plot_geoms(bounding_shape, min_x, max_x, min_y, max_y, len_x, len_y)
-        plot_geoms(geo_shape, min_x, max_x, min_y, max_y, len_x, len_y)
+        if plot_geo_data:
+            plot_geoms(geo_shape, min_x, max_x, min_y, max_y, len_x, len_y)
 
         plt.show()
 
@@ -219,7 +238,8 @@ def main():
         fccs_lookup = lookup.FccsLookUp(**(args.config_options or {}))
         geo_data = load_geo_data(args)
         geo_shape, bounding_shape = get_shapes(fccs_lookup, geo_data)
-        plot(geo_shape, bounding_shape, fccs_lookup, args.neighborhood_dimensions_factor)
+        plot(geo_shape, bounding_shape, fccs_lookup,
+            args.neighborhood_dimensions_factor, args.plot_geo_data)
 
     except Exception as e:
         if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
