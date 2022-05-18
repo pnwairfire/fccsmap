@@ -174,10 +174,10 @@ First, install pip (with sudo if necessary):
 
     apt-get install python-pip
 
-Then, to install, for example, version v3.0.2, use the following (with
+Then, to install, for example, version v3.0.3, use the following (with
 sudo if necessary):
 
-    pip install --no-binary gdal --extra-index https://pypi.airfire.org/simple fccsmap==3.0.2
+    pip install --no-binary gdal --extra-index https://pypi.airfire.org/simple fccsmap==3.0.3
 
 See the Development > Install Dependencies > Notes section, above, for
 notes on resolving pip and gdal issues.
