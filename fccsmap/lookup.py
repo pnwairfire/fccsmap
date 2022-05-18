@@ -281,9 +281,7 @@ class FccsLookUp(object):
             counts = defaultdict(lambda: 0)
             for i in range(len(x.data)):
                 for j in range(len(x.data[i])):
-                    if ignore_mask or not x.mask[i][j]:
-                        # Note: if x.data[i][j] < 0, it's up
-                        # to calling code to deal with it
+                    if (ignore_mask or not x.mask[i][j]) and x.data[i][j] >= 0:
                         counts[x.data[i][j]] += 1
             return dict(counts)
 
