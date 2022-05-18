@@ -67,6 +67,10 @@ class FccsLookUp(object):
             plays a part in Point and MultiPoint look-ups
          - no_sampling -- don't sample surrounding area for Point
             and MultiPoint geometries
+         - use_all_grid_cells -- Consider FCCS map grid cells entirely within
+            the area of interest as well as cells partially outside of the area.
+            (The default behavior is to ignore partial cells, unless there are no
+            fully included cells, in which case parials are used.)
     """
 
     def __init__(self, **options):
@@ -101,7 +105,8 @@ class FccsLookUp(object):
         self._ignored_percentre_sampling_threshold = options.get(
             'ignored_percent_resampling_threshold',
             self.IGNORED_PERCENT_RESAMPLING_THRESHOLD)
-        self._no_sampling  = options.get('no_sampling', False)
+        self._no_sampling = options.get('no_sampling', False)
+        self._use_all_grid_cells = options.get('use_all_grid_cells', False)
 
     ##
     ## Public Interface
@@ -267,10 +272,16 @@ class FccsLookUp(object):
         s = ops.transform(self.projector, s)
 
         def counts(x):
+            # We'll ignore the mask (i.e. consider partial cells) if
+            # configured to do so or if the mask is all true values
+            # (i.e. all cells are partial)
+            ignore_mask = self._use_all_grid_cells or not any([
+                not val for subarray in x.mask  for val in subarray
+            ])
             counts = defaultdict(lambda: 0)
             for i in range(len(x.data)):
                 for j in range(len(x.data[i])):
-                    if not x.mask[i][j]:
+                    if ignore_mask or not x.mask[i][j]:
                         # Note: if x.data[i][j] < 0, it's up
                         # to calling code to deal with it
                         counts[x.data[i][j]] += 1
