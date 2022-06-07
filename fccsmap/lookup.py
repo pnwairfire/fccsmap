@@ -2,7 +2,7 @@
 
 For debugging purposes, you can inspect the fccs NetCDF files directly
 with ferret. See http://ferret.pmel.noaa.gov/Ferret/ to obtain it.
-Tutorial: http://ferret.pmel.noaa.gov/Ferret/documentation/ferret-tutorial.
+Tutorial: http://ferret.pmel.noaa.gov/Ferret/documentation/ferret-tutorials.
 Very simple usage:
 
   $ cd /path/to/fccsmap/repo/fccsmap/data/
