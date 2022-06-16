@@ -47,6 +47,11 @@ class FccsLookUp(object):
             'file': os.path.dirname(__file__) + '/data/FCCS_Alaska.nc',
             'param': 'Band1',
             'grid_resolution': 1
+        },
+        'ca': {
+            'file': os.path.dirname(__file__) + '/data/fccs_canada.nc',
+            'param': 'Band1',
+            'grid_resolution': 0.25
         }
     }
 
@@ -57,6 +62,7 @@ class FccsLookUp(object):
     # script helpstring
     OPTIONS_STRING = """
          - is_alaska -- Whether or not location is in Alaska; boolean
+         - is_canada -- Whether or not location is in Canada; boolean
          - fccs_version -- '1' or '2'
          - fccs_fuelload_file -- NetCDF file containing FCCS lookup map
          - fccs_fuelload_param -- name of variable in NetCDF file
@@ -88,8 +94,15 @@ class FccsLookUp(object):
         #   nonexisting versions)
 
         is_alaska = options.get('is_alaska', False)
+        is_canada = options.get('is_canada', False)
         fccs_version = options.get('fccs_version') or '2'
-        fuel_load_key = 'ak' if is_alaska else 'fccs%s'%(fccs_version)
+
+        if is_alaska:
+            fuel_load_key = 'ak'
+        elif is_canada:
+            fuel_load_key = 'ca'
+        else:
+            fuel_load_key = 'fccs%s'%(fccs_version)
         logging.debug('fuel load key: %s', fuel_load_key)
 
         for k in ('file', 'param', 'grid_resolution'):
