@@ -51,7 +51,7 @@ class FccsLookUp(object):
         'ca': {
             'file': os.path.dirname(__file__) + '/data/fccs_canada.nc',
             'param': 'Band1',
-            'grid_resolution': 0.25
+            'grid_resolution': 1
         }
     }
 
