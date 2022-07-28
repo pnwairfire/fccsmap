@@ -53,6 +53,11 @@ OPTIONAL_ARGS = [
         'long': '--plot-geo-data',
         'action': 'store_true',
         'help': 'Overlay geo data over fccs grid in plot image'
+    },
+    {
+        'short': '-o',
+        'long': '--output-image-file',
+        'help': 'save plot to image file'
     }
 ]
 
@@ -167,7 +172,7 @@ def plot_geoms(shape, min_x, max_x, min_y, max_y, len_x, len_y):
 
 
 def plot(geo_shape, bounding_shape, fccs_lookup,
-        neighborhood_dimensions_factor, plot_geo_data):
+        neighborhood_dimensions_factor, plot_geo_data, output_image_file):
 
     with tempfile.TemporaryDirectory() as tmpdirname:
         # using gdal_translate to extract data. e.g.
@@ -222,6 +227,9 @@ def plot(geo_shape, bounding_shape, fccs_lookup,
         if plot_geo_data:
             plot_geoms(geo_shape, min_x, max_x, min_y, max_y, len_x, len_y)
 
+        if output_image_file:
+            plt.savefig(output_image_file)
+
         plt.show()
 
 
@@ -240,7 +248,8 @@ def main():
         geo_data = load_geo_data(args)
         geo_shape, bounding_shape = get_shapes(fccs_lookup, geo_data)
         plot(geo_shape, bounding_shape, fccs_lookup,
-            args.neighborhood_dimensions_factor, args.plot_geo_data)
+            args.neighborhood_dimensions_factor, args.plot_geo_data,
+            args.output_image_file)
 
     except Exception as e:
         if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
