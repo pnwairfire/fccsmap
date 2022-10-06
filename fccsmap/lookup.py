@@ -113,11 +113,9 @@ class FccsLookUp(object):
         self.gridfile_specifier = "NETCDF:%s:%s" % (self.filename, self.param)
         self._initialize_projector()
 
-        self._ignored_fuelbeds = options.get(
-            'ignored_fuelbeds', self.IGNORED_FUELBEDS)
+        self._ignored_fuelbeds = options.get('ignored_fuelbeds') or self.IGNORED_FUELBEDS
         self._ignored_percentre_sampling_threshold = options.get(
-            'ignored_percent_resampling_threshold',
-            self.IGNORED_PERCENT_RESAMPLING_THRESHOLD)
+            'ignored_percent_resampling_threshold') or self.IGNORED_PERCENT_RESAMPLING_THRESHOLD
         self._no_sampling = options.get('no_sampling', False)
         self._use_all_grid_cells = options.get('use_all_grid_cells', False)
 
