@@ -125,6 +125,8 @@ class FccsLookUp(object):
     ## Public Interface
     ##
 
+    SEARCH_RADIOUS_FACTORS = [1, 3]
+
     def look_up(self, geo_data):
         """Looks up FCCS fuelbed information within a region defined by
         multipolygon region
@@ -165,19 +167,18 @@ class FccsLookUp(object):
         if hasattr(geo_data, 'capitalize'):
             geo_data = json.loads(geo_data)
 
-        if not self._no_sampling and geo_data["type"] in (
-                'Point', 'MultiPoint'):
-            logging.debug("Sampling 1 * grid resoluation")
-            new_geo_data = self._transform_points(geo_data,
-                self.grid_resolution)
-            stats = self._look_up(new_geo_data)
+        if not self._no_sampling and geo_data["type"] in ('Point', 'MultiPoint'):
+            for radius_factor in self.SEARCH_RADIOUS_FACTORS:
+                logging.debug(f"Sampling {radius_factor} * grid resoluation")
 
-            if self._has_high_percent_of_ignored(stats):
-                logging.debug("Resampling 3 * grid resoluation")
                 new_geo_data = self._transform_points(geo_data,
-                    3*self.grid_resolution)
+                    radius_factor * self.grid_resolution)
                 stats = self._look_up(new_geo_data)
-                # at this point, if all water, we'll stick with it
+                logging.debug(f"Stats from sampling {stats}")
+
+                if not self._has_high_percent_of_ignored(stats):
+                    break
+            # at this point, if all water, we'll stick with it
 
             stats['sampled_grid_cells'] = stats.pop('grid_cells')
             stats['sampled_area'] = stats.pop('area')
