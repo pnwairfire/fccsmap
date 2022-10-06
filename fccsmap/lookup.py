@@ -57,6 +57,7 @@ class FccsLookUp(object):
 
     IGNORED_PERCENT_RESAMPLING_THRESHOLD = 99.9  # instead of 100.0, to account for rounding errors
     IGNORED_FUELBEDS = ('0', '900')
+    SAMPLING_RADIUS_FACTORS = [1, 3]
 
     # OPTIONS_DOC_STRING used by Constructor docstring as well as
     # script helpstring
@@ -73,6 +74,10 @@ class FccsLookUp(object):
             plays a part in Point and MultiPoint look-ups
          - no_sampling -- don't sample surrounding area for Point
             and MultiPoint geometries
+         - sampling_radius_factors -- increasing size of sampling area,
+            expressed as a factor times the grid resolution. e.g. With 1km data,
+            [1,3,5] would mean sampling a 2km x 2km area around the point, followed
+            by a 6km x 6km area, and finally a 10km x 10km area (if necessary).
          - use_all_grid_cells -- Consider FCCS map grid cells entirely within
             the area of interest as well as cells partially outside of the area.
             (The default behavior is to ignore partial cells, unless there are no
@@ -117,13 +122,12 @@ class FccsLookUp(object):
         self._ignored_percentre_sampling_threshold = options.get(
             'ignored_percent_resampling_threshold') or self.IGNORED_PERCENT_RESAMPLING_THRESHOLD
         self._no_sampling = options.get('no_sampling', False)
+        self._sampling_radius_factors = options.get('sampling_radius_factors') or self.SAMPLING_RADIUS_FACTORS
         self._use_all_grid_cells = options.get('use_all_grid_cells', False)
 
     ##
     ## Public Interface
     ##
-
-    SEARCH_RADIOUS_FACTORS = [1, 3]
 
     def look_up(self, geo_data):
         """Looks up FCCS fuelbed information within a region defined by
@@ -166,7 +170,7 @@ class FccsLookUp(object):
             geo_data = json.loads(geo_data)
 
         if not self._no_sampling and geo_data["type"] in ('Point', 'MultiPoint'):
-            for radius_factor in self.SEARCH_RADIOUS_FACTORS:
+            for radius_factor in self._sampling_radius_factors:
                 logging.debug(f"Sampling {radius_factor} * grid resoluation")
 
                 new_geo_data = self._transform_points(geo_data,
