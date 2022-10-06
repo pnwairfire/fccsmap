@@ -55,9 +55,13 @@ class FccsLookUp(object):
         }
     }
 
-    IGNORED_PERCENT_RESAMPLING_THRESHOLD = 99.9  # instead of 100.0, to account for rounding errors
-    IGNORED_FUELBEDS = ('0', '900')
-    SAMPLING_RADIUS_FACTORS = [1, 3]
+    OTHER_DEFAULTS = {
+        "ignored_fuelbeds": ('0', '900'),
+        "ignored_percent_resampling_threshold": 99.9,  # instead of 100.0, to account for rounding errors
+        "sampling_radius_factors": [1, 3],
+        "no_sampling": False,
+        "use_all_grid_cells": False,
+    }
 
     # OPTIONS_DOC_STRING used by Constructor docstring as well as
     # script helpstring
@@ -98,32 +102,29 @@ class FccsLookUp(object):
         #   specified and raise errors when appropriate (including invalid
         #   nonexisting versions)
 
-        is_alaska = options.get('is_alaska', False)
-        is_canada = options.get('is_canada', False)
-        fccs_version = options.get('fccs_version') or '2'
-
-        if is_alaska:
+        if options.get('is_alaska', False):
             fuel_load_key = 'ak'
-        elif is_canada:
+        elif options.get('is_canada', False):
             fuel_load_key = 'ca'
         else:
-            fuel_load_key = 'fccs%s'%(fccs_version)
+            fuel_load_key = f"fccs{options.get('fccs_version') or '2'}"
         logging.debug('fuel load key: %s', fuel_load_key)
 
         for k in ('file', 'param', 'grid_resolution'):
-            v = (options.get('fccs_fuelload_{}'.format(k))
+            attr = 'filename' if k=='file' else k
+            val = (options.get('fccs_fuelload_{}'.format(k))
                 or self.FUEL_LOAD_NCS[fuel_load_key][k])
-            setattr(self, 'filename' if k=='file' else k, v)
+            logging.debug(f"Setting {attr} to {val}")
+            setattr(self, attr, val)
 
         self.gridfile_specifier = "NETCDF:%s:%s" % (self.filename, self.param)
         self._initialize_projector()
 
-        self._ignored_fuelbeds = options.get('ignored_fuelbeds') or self.IGNORED_FUELBEDS
-        self._ignored_percentre_sampling_threshold = options.get(
-            'ignored_percent_resampling_threshold') or self.IGNORED_PERCENT_RESAMPLING_THRESHOLD
-        self._no_sampling = options.get('no_sampling', False)
-        self._sampling_radius_factors = options.get('sampling_radius_factors') or self.SAMPLING_RADIUS_FACTORS
-        self._use_all_grid_cells = options.get('use_all_grid_cells', False)
+        for k in self.OTHER_DEFAULTS:
+            attr = f"_{k}"
+            val = options[k] if options.get(k) is not None else self.OTHER_DEFAULTS[k]
+            logging.debug(f"Setting {attr} to {val}")
+            setattr(self, attr, val)
 
     ##
     ## Public Interface
@@ -312,7 +313,7 @@ class FccsLookUp(object):
 
     def _has_high_percent_of_ignored(self, stats):
         return (self._compute_total_percent_ignored(stats) >=
-            self._ignored_percentre_sampling_threshold)
+            self._ignored_percent_resampling_threshold)
 
     def _compute_total_percent_ignored(self, stats):
         return sum([
