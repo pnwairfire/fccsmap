@@ -58,7 +58,7 @@ class FccsLookUp(object):
     OTHER_DEFAULTS = {
         "ignored_fuelbeds": ('0', '900'),
         "ignored_percent_resampling_threshold": 99.9,  # instead of 100.0, to account for rounding errors
-        "sampling_radius_factors": [1, 3],
+        "sampling_radius_factors": [3, 5],
         "no_sampling": False,
         "use_all_grid_cells": False,
     }

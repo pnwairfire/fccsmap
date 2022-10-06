@@ -25,14 +25,15 @@ class TestFccsLookUp(object):
         expected = {
             'fuelbeds': {
                 '52': {
-                    'grid_cells': 4,
-                    'percent': 100.0
+                    'percent': 100.00000000000001,
+                    'grid_cells': 34
                 }
             },
-           'sampled_area': 4014629.570943463,
-           'sampled_grid_cells': 4,
-           'units': 'm^2'
+            'sampled_grid_cells': 37,
+            'sampled_area': 36131660.998113036,
+            'units': 'm^2'
         }
+
         assert self._lookup.look_up(geo_data) == expected
 
     def test_point_in_water(self):
@@ -63,11 +64,11 @@ class TestFccsLookUp(object):
         }
         expected = {
             'fuelbeds': {
-                '24': {'grid_cells': 4, 'percent': 80.0},
-                '52': {'grid_cells': 1, 'percent': 20.0}
+                '24': {'grid_cells': 25, 'percent': 67.56756756756756},
+                '52': {'grid_cells': 12, 'percent': 32.432432432432435}
             },
-            'sampled_area': 4014605.673742279,
-            'sampled_grid_cells': 5,
+            'sampled_grid_cells': 37,
+            'sampled_area': 36131445.92730406,
             'units': 'm^2'
         }
         assert self._lookup.look_up(geo_data) == expected
@@ -81,13 +82,16 @@ class TestFccsLookUp(object):
             ]
         }
         expected = {
-            'sampled_area': 8029771.678785425,
             'fuelbeds': {
-                '4': {'grid_cells': 2, 'percent': 20.0},
-                '60': {'grid_cells': 2, 'percent': 20.0},
-                '52': {'grid_cells': 2, 'percent': 20.0},
-                '24': {'grid_cells': 4, 'percent': 40.0}
-            }, 'units': 'm^2', 'sampled_grid_cells': 10}
+                '4': {'grid_cells': 12, 'percent': 16.666666666666668},
+                '60': {'grid_cells': 11, 'percent': 15.277777777777779},
+                '52': {'grid_cells': 24, 'percent': 33.333333333333336},
+                '24': {'grid_cells': 25, 'percent': 34.72222222222222}
+            },
+            'sampled_grid_cells': 72,
+            'sampled_area': 72267934.74002303,
+            'units': 'm^2',
+        }
         assert self._lookup.look_up(geo_data) == expected
 
     def test_multipoint_in_water(self):
