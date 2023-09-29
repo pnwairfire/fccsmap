@@ -1,4 +1,4 @@
-from py.test import raises
+from pytest import raises
 
 from fccsmap.lookup import FccsLookUp
 

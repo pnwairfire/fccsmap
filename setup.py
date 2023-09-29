@@ -32,9 +32,9 @@ setup(
     install_requires=[
         "afscripting>=2.0.0",
         # Note: numpy and gdal must now be installed manually beforehand
-        "shapely==1.7.1",
-        "pyproj==3.0.0.post1",
-        "rasterstats==0.15.0"
+        "shapely==2.0.1",
+        "pyproj==3.6.1",
+        "rasterstats==0.19.0"
     ],
     dependency_links=[
         "https://pypi.airfire.org/simple/afscripting/",
