@@ -1,3 +1,4 @@
 ipython
+geopandas==0.14.2
 netCDF4==1.5.8
 matplotlib==3.5.1
