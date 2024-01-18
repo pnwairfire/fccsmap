@@ -214,8 +214,6 @@ TRUNCATION_PCT_THRESHOLD = 90
 TRUNCATION_NUM_THRESHOLD = None
 
 def get_all_fuelbeds_per_grid_cell(fire_grid, fccs_grid):
-    # TODO: look into using `df.groupby` instead of
-    #   manually iterating through the rows
     df = fccs_grid.sjoin(fire_grid, rsuffix='fire_grid')
     fpg = df.groupby(['fccs_id','index_fire_grid']).size().to_frame('count').reset_index()
 
@@ -248,12 +246,12 @@ def prune(all_fuelbeds):
     #    remaining cells.   Potentially: Truncate to 5 FCCS IDs max.
     #    Renormalize to the truncated total.
     included = defaultdict(lambda: {})
-    truncated = {}
-    excluded = {}
+    truncated = defaultdict(lambda: {})
+    excluded = defaultdict(lambda: {})
     for idx in all_fuelbeds:
         total_pct = 0
         total_num = 0
-        for fccs_id, in reversed(all_fuelbeds[idx].items(), key=lambda e: e[1]['pct']):
+        for fccs_id, d in sorted(all_fuelbeds[idx].items(), key=lambda e: -e[1]['pct']):
             if do_exclude(fccs_id):
                 excluded[idx][fccs_id] = all_fuelbeds[idx][fccs_id]
             elif (total_pct >= TRUNCATION_PCT_THRESHOLD
