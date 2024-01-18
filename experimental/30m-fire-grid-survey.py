@@ -6,10 +6,10 @@ import importlib
 import json
 import logging
 import rasterio
+import rasterio.features
 import shapely
 import sys
 from collections import defaultdict
-from rasterio.features import shapes
 
 try:
     pass # TODO: import any required fccsmap modules
@@ -127,7 +127,10 @@ def define_grid_proj(bbox: List[float], res: float) -> geopandas.GeoDataFrame:
             polygons.append(Polygon([ll, ul, ur, lr]))
             lt_ln.append([lt, ln])
 
-    return geopandas.GeoDataFrame({'geometry': polygons, 'lt_ln': lt_ln}, crs="EPSG:5070")
+    return geopandas.GeoDataFrame({
+            'geometry': polygons,
+            'lt_ln': lt_ln
+        }, crs="EPSG:5070")
 
 
 ###############################################################################
@@ -151,28 +154,33 @@ def get_fccs_grid(args):
     #  shape, e.g.: (101538, 156335)
 
     # read the data and create the shapes
-    with rasterio.open(args.geo_tiff_file) as f:
-        data = f.read()
-        #data = data.astype('int16')
-        grid_shapes = shapes(data)
-        crs_str = f.crs.to_string()
-        res = f.res
+    with rasterio.open(args.geo_tiff_file) as tiff:
+        data = tiff.read(1)
+        data = data.astype('int16')
+
+        grid_shapes = rasterio.features.shapes(
+            data, mask=None, transform=tiff.transform)
+        crs = tiff.crs
+        res = tiff.res
 
     # read the shapes as separate lists
     fccs_ids = []
-    center_points = []
+    geometry = []
     for shape, value in grid_shapes:
-        # We'll use centroids of FCCS grid cells to speed up
-        # spatial joins, below
-        center_points.append(Polygon(shape['coordinates'][0]).centroid)
+        # We'll use centroids of FCCS grid cells to speed up spatial joins, below
+        geometry.append(shapely.geometry.shape(shape).centroid)
         fccs_ids.append(value)
 
     # build the gdf object over the two lists
-    gdf = geopandas.GeoDataFrame({'fccs_id': fccs_ids, 'geometry': center_points}, crs=crs_str)
+    gdf = geopandas.GeoDataFrame({
+            'fccs_id': fccs_ids,
+            'geometry': geometry
+        }, crs=crs)
 
-    if crs_str != 'EPSG:5070':
+    if  crs.to_string() != 'EPSG:5070':
         gdf = gdf.to_crs('EPSG:5070')
 
+    import pdb;pdb.set_trace()
     return gdf
 
 
@@ -234,7 +242,8 @@ if __name__ == '__main__':
         # shapely.geometry.mapping produces a GeoJSON feature
         e = shapely.geometry.mapping(fire_grid_polygon)
         e['properties'] = {
-            'fuelbeds': fuelbeds
+            'fuelbeds': fuelbeds,
+            'lat_lng_indiices': fire_grid.lt_ln[i],
         }
         results.append(e)
 
