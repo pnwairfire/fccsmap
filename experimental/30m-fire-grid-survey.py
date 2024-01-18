@@ -73,6 +73,8 @@ def parse_args():
         help="full pathname of JSON output file to be generated")
     parser.add_argument('-c', '--csv-output-file',
         help="full pathname of CSV output file to be generated")
+    parser.add_argument('--tiff-load-implementation', default='rasterio',
+        help="options: 'rasterio', 'rioxarray'")
 
     parser.add_argument('--log-level', default='INFO', help="Log level")
 
@@ -140,9 +142,13 @@ def get_fire_grid(args):
 
     return grid
 
-
 def get_fccs_grid_rioxarray(args, fire_grid):
     # See https://gis.stackexchange.com/questions/365538/exporting-geotiff-raster-to-geopandas-dataframe
+    logging.info("Reading FCCS grid tif file with rioxarray")
+    raster = rioxarray.open_rasterio(infile)
+
+    import pdb;pdb.set_trace()
+
     raise NotImplementedError("Haven't yet implemented loading tiff data into GeoDataFrame with rioxarray")
 
 def get_fccs_grid_rasterio(args, fire_grid):
@@ -153,11 +159,16 @@ def get_fccs_grid_rasterio(args, fire_grid):
     #  shape, e.g.: (101538, 156335)
 
     # read the data and create the shapes
-    logging.info("Reading fire grid tif file")
+    logging.info("Reading FCCS grid tif file with rasterio")
     with rasterio.open(args.geo_tiff_file) as tiff:
         data = tiff.read(1)
         data = data.astype('int16')
 
+        # TODO: read docs on `mask` kwarg
+        # TODO: use other method or package, since docs say that
+        #   that it uses large amounts of memory when there's high
+        #   pixel-to-variability
+        #   https://rasterio.readthedocs.io/en/latest/api/rasterio.features.html
         grid_shapes = rasterio.features.shapes(
             data, mask=None, transform=tiff.transform)
         crs = tiff.crs
@@ -199,35 +210,62 @@ def get_fccs_grid_rasterio(args, fire_grid):
     return gdf
 
 
-def get_fccs_ids_by_fire_grid_cell(df):
+TRUNCATION_PCT_THRESHOLD = 90
+TRUNCATION_NUM_THRESHOLD = None
+
+def get_all_fuelbeds_per_grid_cell(fire_grid, fccs_grid):
     # TODO: look into using `df.groupby` instead of
     #   manually iterating through the rows
+    df = fccs_grid.sjoin(fire_grid, rsuffix='fire_grid')
+    fpg = df.groupby(['fccs_id','index_fire_grid']).size().to_frame('count').reset_index()
 
-    logging.info("Iterating through result of sjoin")
-    fccs_ids_by_fire_grid_cell_idx = defaultdict(lambda: [])
-    for fire_grid_index, series_obj in df.iterrows():
-        # Notes:
-        #  - fire_grid_index -- the index of the grid cell in the
-        #    one dimensional fire_grid.geometry array
-        #  - series_obj.geometry == fire_grid.geometry[fire_grid_index]
-        #  - series_obj.lt_ln -- the y,x indices of the grid cell in the fire grid
-        #  - series_obj.index_right -- the index of the point in the one
-        #    dimensional fccs_grid.geometry array
+    counts = defaultdict(lambda: {'counts': {}, 'total': 0})
+    for _, obj in fpg.iterrows():
+        idx = int(obj.index_fire_grid)
+        fccs_id = str(int(obj.fccs_id))
+        count = obj.count()
+        counts[idx]['counts'][fccs_id] = count
+        counts[idx]['total'] += count
 
-        #key = ','.join([str(e) for e in series_obj.lt_ln])
-        key = fire_grid_index
-        fccs_ids_by_fire_grid_cell_idx[key].append(series_obj.fccs_id)
+    all_fuelbeds = {}
+    for idx in counts:
+        cell = counts[idx]
+        all_fuelbeds[idx] = {
+            k: {
+                'pct': 100.0 * cell['counts'][k] / cell['total'],
+                'count': cell['counts'][k]
+            } for k in cell['counts']
+        }
 
-    return fccs_ids_by_fire_grid_cell_idx
+    return all_fuelbeds
 
-def get_count_by_fccs_id(fccs_ids):
-    # TODO: keep track of non-land, non-forested fuelbeds separately
-    total_counts = defaultdict(lambda: 0)
-    for fccs_id in fccs_ids:
-        total_counts[fccs_id] += 1
-    total = sum(total_counts.values())
-    return total_counts, total
+def do_exclude(fccs_id):
+    # TODO: implemented
+    return False
 
+def prune(all_fuelbeds):
+    # Keep only the most prevalent FCCS IDs that comprise 90% of the
+    #    remaining cells.   Potentially: Truncate to 5 FCCS IDs max.
+    #    Renormalize to the truncated total.
+    included = defaultdict(lambda: {})
+    truncated = {}
+    excluded = {}
+    for idx in all_fuelbeds:
+        total_pct = 0
+        total_num = 0
+        for fccs_id, in reversed(all_fuelbeds[idx].items(), key=lambda e: e[1]['pct']):
+            if do_exclude(fccs_id):
+                excluded[idx][fccs_id] = all_fuelbeds[idx][fccs_id]
+            elif (total_pct >= TRUNCATION_PCT_THRESHOLD
+                    or (TRUNCATION_NUM_THRESHOLD and total_num >= TRUNCATION_NUM_THRESHOLD)):
+                truncated[idx][fccs_id] = all_fuelbeds[idx][fccs_id]
+            else:
+                included[idx][fccs_id] = all_fuelbeds[idx][fccs_id]
+
+            total_pct += all_fuelbeds[idx][fccs_id]['pct']
+            total_num += 1
+
+    return fuelbeds, truncated, excluded
 
 if __name__ == '__main__':
     args = parse_args()
@@ -239,38 +277,25 @@ if __name__ == '__main__':
     fire_grid = get_fire_grid(args)
 
     logging.info("Getting FCCS grid")
-    fccs_grid = get_fccs_grid_rasterio(args, fire_grid)
+    f = globals().get(f"get_fccs_grid_{args.tiff_load_implementation}")
+    if not f:
+        raise RuntimeError("Invalid tiff file load implementation - "
+            f"{args.tiff_load_implementation}")
+    fccs_grid = f(args, fire_grid)
 
-    logging.info("Running sjoin on GeoDataFrames")
-    # TODO: set `how="left"`?  (see https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.sjoin.html)
-    df = fire_grid.sjoin(fccs_grid)
+    all_fuelbeds = get_all_fuelbeds_per_grid_cell(fire_grid, fccs_grid)
+    included, truncated, excluded = prune(all_fuelbeds)
 
-    fccs_ids_by_fire_grid_cell_idx = get_fccs_ids_by_fire_grid_cell(df)
-
-    fire_grid_4326 = fire_grid.to_crs('EPSG:4326')
+    import pdb; pdb.set_trace()
 
     results = []
+    fire_grid_4326 = fire_grid.to_crs('EPSG:4326')
     for i, fire_grid_polygon in enumerate(fire_grid_4326.geometry):
-        fccs_ids = fccs_ids_by_fire_grid_cell_idx[i]
-
-        # get count by FCCS id
-        total_counts, total = get_count_by_fccs_id(fccs_ids)
-
-        # compute fuelbed percentages
-        fuelbeds =  {
-            str(k): {
-                'percent': 100.0 * float(v)/float(total), 'grid_cells': v
-            } for k,v in list(total_counts.items())
-        }
-
-        # TODO: Keep only the most prevalent FCCS IDs that comprise 90% of the
-        #    remaining cells.   Potentially: Truncate to 5 FCCS IDs max.
-        #    Renormalize to the truncated total.
 
         # shapely.geometry.mapping produces a GeoJSON feature
         e = shapely.geometry.mapping(fire_grid_polygon)
         e['properties'] = {
-            'fuelbeds': fuelbeds,
+            'fuelbeds': included[i],
             'lat_lng_indiices': fire_grid.lt_ln[i],
         }
         results.append(e)
