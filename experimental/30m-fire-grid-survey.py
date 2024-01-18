@@ -7,6 +7,7 @@ import json
 import logging
 import rasterio
 import rasterio.features
+import rioxarray
 import shapely
 import sys
 from collections import defaultdict
@@ -139,7 +140,12 @@ def get_fire_grid(args):
 
     return grid
 
-def get_fccs_grid(args, fire_grid):
+
+def get_fccs_grid_rioxarray(args, fire_grid):
+    # See https://gis.stackexchange.com/questions/365538/exporting-geotiff-raster-to-geopandas-dataframe
+    raise NotImplementedError("Haven't yet implemented loading tiff data into GeoDataFrame with rioxarray")
+
+def get_fccs_grid_rasterio(args, fire_grid):
     # The tiff object has the following attrs
     #  bounds e.g.:  BoundingBox(left=-2362395.000000002, bottom=221265.00000000373, right=2327654.999999998, top=3267405.0000000037)
     #  crs, e.g.: CRS.from_epsg(5070)
@@ -193,23 +199,7 @@ def get_fccs_grid(args, fire_grid):
     return gdf
 
 
-if __name__ == '__main__':
-    args = parse_args()
-
-
-    logging.basicConfig(format='%(asctime)s [%(levelname)s]:%(message)s',
-        level=getattr(logging, args.log_level))
-
-    logging.info("Getting fire grid")
-    fire_grid = get_fire_grid(args)
-
-    logging.info("Getting FCCS grid")
-    fccs_grid = get_fccs_grid(args, fire_grid)
-
-    logging.info("Running sjoin on GeoDataFrames")
-    # TODO: set `how="left"`?  (see https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.sjoin.html)
-    df = fire_grid.sjoin(fccs_grid)
-
+def get_fccs_ids_by_fire_grid_cell(df):
     # TODO: look into using `df.groupby` instead of
     #   manually iterating through the rows
 
@@ -228,6 +218,35 @@ if __name__ == '__main__':
         key = fire_grid_index
         fccs_ids_by_fire_grid_cell_idx[key].append(series_obj.fccs_id)
 
+    return fccs_ids_by_fire_grid_cell_idx
+
+def get_count_by_fccs_id(fccs_ids):
+    # TODO: keep track of non-land, non-forested fuelbeds separately
+    total_counts = defaultdict(lambda: 0)
+    for fccs_id in fccs_ids:
+        total_counts[fccs_id] += 1
+    total = sum(total_counts.values())
+    return total_counts, total
+
+
+if __name__ == '__main__':
+    args = parse_args()
+
+    logging.basicConfig(format='%(asctime)s [%(levelname)s]:%(message)s',
+        level=getattr(logging, args.log_level))
+
+    logging.info("Getting fire grid")
+    fire_grid = get_fire_grid(args)
+
+    logging.info("Getting FCCS grid")
+    fccs_grid = get_fccs_grid_rasterio(args, fire_grid)
+
+    logging.info("Running sjoin on GeoDataFrames")
+    # TODO: set `how="left"`?  (see https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.sjoin.html)
+    df = fire_grid.sjoin(fccs_grid)
+
+    fccs_ids_by_fire_grid_cell_idx = get_fccs_ids_by_fire_grid_cell(df)
+
     fire_grid_4326 = fire_grid.to_crs('EPSG:4326')
 
     results = []
@@ -235,11 +254,7 @@ if __name__ == '__main__':
         fccs_ids = fccs_ids_by_fire_grid_cell_idx[i]
 
         # get count by FCCS id
-        # TODO: keep track of non-land, non-forested fuelbeds separately
-        total_counts = defaultdict(lambda: 0)
-        for fccs_id in fccs_ids:
-            total_counts[fccs_id] += 1
-        total = sum(total_counts.values())
+        total_counts, total = get_count_by_fccs_id(fccs_ids)
 
         # compute fuelbed percentages
         fuelbeds =  {
