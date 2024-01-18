@@ -139,7 +139,7 @@ def get_fire_grid(args):
 
     return grid
 
-def get_fccs_grid(args):
+def get_fccs_grid(args, fire_grid):
     # The tiff object has the following attrs
     #  bounds e.g.:  BoundingBox(left=-2362395.000000002, bottom=221265.00000000373, right=2327654.999999998, top=3267405.0000000037)
     #  crs, e.g.: CRS.from_epsg(5070)
@@ -157,14 +157,27 @@ def get_fccs_grid(args):
         crs = tiff.crs
         res = tiff.res
 
+    # We'll use the fire grid total bounds to determine whether or not
+    # to include fccs grid cells in the fccs grid dataframe, below
+    # TODO: Can we crop fccs grid earlier,
+    fire_grid_bounds = fire_grid.to_crs(crs).total_bounds
+
     logging.info("Collecting lists of grid cell centers and FCCS Ids")
     # read the shapes as separate lists
     fccs_ids = []
     geometry = []
+    omitted = 0
     for shape, value in grid_shapes:
         # We'll use centroids of FCCS grid cells to speed up spatial joins, below
-        geometry.append(shapely.geometry.shape(shape).centroid)
-        fccs_ids.append(value)
+        centroid = shapely.geometry.shape(shape).centroid
+        if (centroid.x >= fire_grid_bounds[0] and centroid.x <= fire_grid_bounds[2]
+                and centroid.y >= fire_grid_bounds[1] and centroid.x <= fire_grid_bounds[3]):
+            geometry.append(centroid)
+            fccs_ids.append(value)
+        else:
+            omitted += 1
+
+    logging.info(f"Kept {len(geometry)} FCCS grid cells and omitted {omitted}")
 
     # build the gdf object over the two lists
     logging.info("Building FCCS GeoDataFrame")
@@ -191,7 +204,7 @@ if __name__ == '__main__':
     fire_grid = get_fire_grid(args)
 
     logging.info("Getting FCCS grid")
-    fccs_grid = get_fccs_grid(args)
+    fccs_grid = get_fccs_grid(args, fire_grid)
 
     logging.info("Running sjoin on GeoDataFrames")
     # TODO: set `how="left"`?  (see https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.sjoin.html)
