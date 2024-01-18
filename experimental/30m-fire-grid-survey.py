@@ -147,6 +147,7 @@ def get_fccs_grid(args):
     #  shape, e.g.: (101538, 156335)
 
     # read the data and create the shapes
+    logging.info("Reading fire grid tif file")
     with rasterio.open(args.geo_tiff_file) as tiff:
         data = tiff.read(1)
         data = data.astype('int16')
@@ -156,6 +157,7 @@ def get_fccs_grid(args):
         crs = tiff.crs
         res = tiff.res
 
+    logging.info("Collecting lists of grid cell centers and FCCS Ids")
     # read the shapes as separate lists
     fccs_ids = []
     geometry = []
@@ -165,12 +167,14 @@ def get_fccs_grid(args):
         fccs_ids.append(value)
 
     # build the gdf object over the two lists
+    logging.info("Building FCCS GeoDataFrame")
     gdf = geopandas.GeoDataFrame({
             'fccs_id': fccs_ids,
             'geometry': geometry
         }, crs=crs)
 
     if  crs.to_string() != 'EPSG:5070':
+        logging.info(f"Transforming FCCS GeoDataFrame from {crs.to_string()} to EPSG:5070")
         gdf = gdf.to_crs('EPSG:5070')
 
     return gdf
