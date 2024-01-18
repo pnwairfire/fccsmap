@@ -52,15 +52,8 @@ Examples:
     {script} -w -156.3 -e -156.2 -s 20.7 -n 20.8 \\
       -f ~/WFEIS-30m-FCCS-LANDFIRE-data/LF2022_FCCS_220_HI/Tif/LH22_FCCS_220.tif \\
       -j ./30m-fccs-HawaiiMaui-output.json
-
-
-  Area south of HI which ends up within the bounds of the tif file
-
-    {script} -w -156.9 -e -156.8 -s 13.0 -n 13.1 \\
-      -f ~/WFEIS-30m-FCCS-LANDFIRE-data/LF2022_FCCS_220_HI/Tif/LH22_FCCS_220.tif \\
-      -j ./30m-fccs-SouthOfHawaii-output.json
-
  """.format(script=sys.argv[0])
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-w', '--fire-grid-bounds-west', required=True,
@@ -180,7 +173,6 @@ def get_fccs_grid(args):
     if  crs.to_string() != 'EPSG:5070':
         gdf = gdf.to_crs('EPSG:5070')
 
-    import pdb;pdb.set_trace()
     return gdf
 
 
@@ -198,7 +190,11 @@ if __name__ == '__main__':
     fccs_grid = get_fccs_grid(args)
 
     logging.info("Running sjoin on GeoDataFrames")
+    # TODO: set `how="left"`?  (see https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.sjoin.html)
     df = fire_grid.sjoin(fccs_grid)
+
+    # TODO: look into using `df.groupby` instead of
+    #   manually iterating through the rows
 
     logging.info("Iterating through result of sjoin")
     fccs_ids_by_fire_grid_cell_idx = defaultdict(lambda: [])
