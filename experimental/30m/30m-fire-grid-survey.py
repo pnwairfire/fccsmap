@@ -77,6 +77,8 @@ def parse_args():
         help="full pathname of JSON output file to be generated")
     parser.add_argument('-c', '--csv-output-file',
         help="full pathname of CSV output file to be generated")
+    parser.add_argument('--shapefile-output',
+        help="full pathname of shapefile to be generated")
     parser.add_argument('--tiff-load-implementation', default='rasterio',
         help="options: 'rasterio', 'rioxarray'")
 
@@ -148,12 +150,39 @@ def get_fire_grid(args):
 
 def get_fccs_grid_rioxarray(args, fire_grid):
     # See https://gis.stackexchange.com/questions/365538/exporting-geotiff-raster-to-geopandas-dataframe
+
     logging.info("Reading FCCS grid tif file with rioxarray")
-    raster = rioxarray.open_rasterio(infile)
+    raster = rioxarray.open_rasterio(args.geo_tiff_file)
 
-    import pdb;pdb.set_trace()
+    #get first band of raster
+    band = raster[0]
+    x, y, fccs_id = band.x.values, band.y.values, band.values
+    x, y = numpy.meshgrid(x, y)
+    x, y, fccs_id = x.flatten(), y.flatten(), fccs_id.flatten()
 
-    raise NotImplementedError("Haven't yet implemented loading tiff data into GeoDataFrame with rioxarray")
+    # TODO: Can we crop data here to exclude anything outside of the
+    #   fire grid (based on `fire_grid.to_crs(crs).total_bounds`)?
+    #   If we can, remove use of `fire_grid_bounds`, below
+
+    # create new geoseries with centroid geometries
+    gdf = geopandas.GeoDataFrame(geometry=geopandas.GeoSeries.from_xy(x, y, crs=band.rio.crs))
+    gdf['fccs_id'] = fccs_id
+
+
+    # create new geoseries with pixel geometries
+    # logging.info("Reading FCCS grid tif file with rasterio to get meta data")
+    # with rasterio.open(args.geo_tiff_file) as tiff:
+    #     res = tiff.res
+    #     transform =tiff.transform
+    # pixels = gdf.buffer(res*multiplier, cap_style=3)
+    # polygons = geopandas.GeoDataFrame(geometry=pixels, crs=band.rio.crs)
+    # polygons['fccs_id'] = fccs_id
+
+    if band.rio.crs.to_string() != 'EPSG:5070':
+        logging.info(f"Transforming FCCS GeoDataFrame from {band.rio.crs.to_string()} to EPSG:5070")
+        gdf = gdf.to_crs('EPSG:5070')
+
+    return gdf
 
 def get_fccs_grid_rasterio(args, fire_grid):
     # The tiff object has the following attrs
@@ -322,3 +351,8 @@ if __name__ == '__main__':
 
     if args.csv_output_file:
         logging.warning("CSV output not yet implemented")
+
+    if args.shapefile_output:
+        # TODO: create GeoDataFrame from results and then call
+        # df.to_file(args.shapefile_output, crs=df.crs)
+        logging.warning("--shapefile not yet implemented")
