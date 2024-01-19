@@ -291,8 +291,6 @@ if __name__ == '__main__':
     all_fuelbeds = get_all_fuelbeds_per_grid_cell(fire_grid, fccs_grid)
     included, truncated, excluded = prune(all_fuelbeds)
 
-    import pdb; pdb.set_trace()
-
     results = []
     fire_grid_4326 = fire_grid.to_crs('EPSG:4326')
     for i, fire_grid_polygon in enumerate(fire_grid_4326.geometry):
