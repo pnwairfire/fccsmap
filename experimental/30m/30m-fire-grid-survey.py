@@ -295,14 +295,19 @@ if __name__ == '__main__':
     fire_grid_4326 = fire_grid.to_crs('EPSG:4326')
     for i, fire_grid_polygon in enumerate(fire_grid_4326.geometry):
 
-        # shapely.geometry.mapping produces a GeoJSON feature
-        e = shapely.geometry.mapping(fire_grid_polygon)
-        e['properties'] = {
-            'fuelbeds': included[i],
-            'excluded': excluded[i],
-            'truncated': truncated[i],
-            'lat_lng_indiices': fire_grid.lt_ln[i],
+        e = {
+            "type": "Feature",
+            # shapely.geometry.mapping produces a GeoJSON feature geometry
+            "geometry": shapely.geometry.mapping(fire_grid_polygon),
+            "properties": {
+                'fuelbeds': included[i],
+                'excluded': excluded[i],
+                'truncated': truncated[i],
+                'lat_lng_indiices': fire_grid.lt_ln[i],
+            },
+            "id": i
         }
+
         results.append(e)
 
     if args.json_output_file:
