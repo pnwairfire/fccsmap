@@ -66,6 +66,33 @@
 
             let fccsLayer = null
 
+            function getFuelbedsList(fuelbeds) {
+                if (fuelbeds && fuelbeds.length > 0) {
+                    let lis = fuelbeds.map(fb => {
+                        return `<li>${fb.fccsId} ${fb.pct}% (${fb.count})</li>`
+                    })
+
+                    return '<ul>' + lis.join('') + '</ul>'
+                } else {
+                    return '<div>(none)</div>'
+                }
+
+            }
+
+            function getPopupContent(feature) {
+                const props = feature.properties
+                let content = '<div>'
+                    +'<div>Fuelbeds</div>'
+                    + getFuelbedsList(props.fuelbeds)
+                    +'<div>Truncated</div>'
+                    + getFuelbedsList(props.truncated)
+                    +'<div>Excluded</div>'
+                    + getFuelbedsList(props.excluded)
+                    + '</div>'
+                return content
+            }
+
+
             document.getElementById("file-to-read").addEventListener("change",function(){
                 // Remove the old FCCS layer even if the new file fails to load.
                 // This is so that we don't show the new, failed file name in the
@@ -99,6 +126,9 @@
                                         fillColor: "#B0DE5C",
                                         fillOpacity: 0.8
                                     }
+                                },
+                                onEachFeature: (feature, layer) => {
+                                    layer.bindPopup(getPopupContent(feature));
                                 }
                             }).addTo(map);
 
