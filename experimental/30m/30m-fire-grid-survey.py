@@ -263,7 +263,7 @@ def prune(all_fuelbeds):
             total_pct += all_fuelbeds[idx][fccs_id]['pct']
             total_num += 1
 
-    return fuelbeds, truncated, excluded
+    return included, truncated, excluded
 
 if __name__ == '__main__':
     args = parse_args()
