@@ -294,6 +294,8 @@ if __name__ == '__main__':
         e = shapely.geometry.mapping(fire_grid_polygon)
         e['properties'] = {
             'fuelbeds': included[i],
+            'excluded': excluded[i],
+            'truncated': truncated[i],
             'lat_lng_indiices': fire_grid.lt_ln[i],
         }
         results.append(e)
