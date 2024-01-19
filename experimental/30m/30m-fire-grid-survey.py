@@ -275,6 +275,8 @@ def prune(all_fuelbeds):
 
     return included, truncated, excluded
 
+OUTPUT_CRS = 'EPSG:4326'
+
 if __name__ == '__main__':
     args = parse_args()
 
@@ -295,14 +297,15 @@ if __name__ == '__main__':
     included, truncated, excluded = prune(all_fuelbeds)
 
     results = []
-    fire_grid_4326 = fire_grid.to_crs('EPSG:4326')
-    for i, fire_grid_polygon in enumerate(fire_grid_4326.geometry):
+    output_fire_grid = fire_grid.to_crs(OUTPUT_CRS)
+    for i, fire_grid_polygon in enumerate(output_fire_grid.geometry):
 
         e = {
             "type": "Feature",
             # shapely.geometry.mapping produces a GeoJSON feature geometry
             "geometry": shapely.geometry.mapping(fire_grid_polygon),
             "properties": {
+                'crs': OUTPUT_CRS,
                 'fuelbeds': included[i],
                 'excluded': excluded[i],
                 'truncated': truncated[i],

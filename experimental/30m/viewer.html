@@ -5,7 +5,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>GeoJSON tutorial - Leaflet</title>
+        <title>30m FCCS Output Viewer</title>
 
         <link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />
 
@@ -24,42 +24,83 @@
                 max-width: 100%;
                 max-height: 100%;
             }
-            #file-upload-form-container {
+            #top-controls {
                 position: absolute;
                 z-index: 9999;
                 padding-left: 50px;
+                width: 100%;
+            }
+            #cursor-position-display {
+                width: 200px;
+                padding: 6px;
+                margin: 16px;
+                text-align: center;
             }
 
         </style>
 
     </head>
     <body>
-        <form id="file-upload-form-container" class="row row-cols-lg-auto m-3 align-items-center" action="/api" method="post" enctype="multipart/form-data">
-            <div class="col-12">
-                <input class="form-control" id="file-to-read" name="file" type="file"/>
+        <div id="top-controls" class="row">
+            <div class="col">
+                <form id="file-upload-form-container" class="row row-cols-lg-auto m-3 align-items-center" action="/api" method="post" enctype="multipart/form-data">
+                    <div class="col-12">
+                        <input class="form-control" id="file-to-read" name="file" type="file"/>
+                    </div>
+                    <!-- <div class="col-12">
+                        <button class="btn btn-sm btn-primary">Upload</button>
+                    </div> -->
+                </form>
             </div>
-            <!-- <div class="col-12">
-                <button class="btn btn-sm btn-primary">Upload</button>
-            </div> -->
-        </form>
+            <div class="col">
+                <div class="alert alert-light" role="alert" id="cursor-position-display"> </div>
+            </div>
+        </div>
 
         <div id='map'></div>
 
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+        <!-- <script src="https://unpkg.com/esri-leaflet@3.0.10/dist/esri-leaflet.js"></script> -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 
         <script>
             /* map */
-            const map = L.map('map').setView([40, -100], 5);
+            const INIT_LAT = 40
+            const INIT_LNG = -100
+            const map = L.map('map').setView([INIT_LAT, INIT_LNG], 5);
 
             const basemaps = {
-                StreetView: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',   {attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}),
-                Topography: L.tileLayer.wms('http://ows.mundialis.de/services/service?',   {layers: 'TOPO-WMS'}),
-                Places: L.tileLayer.wms('http://ows.mundialis.de/services/service?', {layers: 'OSM-Overlay-WMS'})
+                'World Imagery': L.tileLayer(
+                    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                    {attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'})
+                ,
+                'Street View': L.tileLayer(
+                    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    {attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}
+                ),
+                Topography: L.tileLayer.wms(
+                    'http://ows.mundialis.de/services/service?',
+                    {layers: 'TOPO-WMS'}),
+                Places: L.tileLayer.wms(
+                    'http://ows.mundialis.de/services/service?',
+                    {layers: 'OSM-Overlay-WMS'})
             };
-            basemaps.StreetView.addTo(map) // default
+            basemaps['World Imagery'].addTo(map) // default
             L.control.layers(basemaps).addTo(map); //
 
+
+            /* cursor position */
+            const posDisp = document.getElementById("cursor-position-display")
+            function displayPosition(lat, lng) {
+                posDisp.innerHTML = `${lat}, ${lng}`;
+            }
+            displayPosition(INIT_LAT, INIT_LNG)
+
+            map.addEventListener('mousemove', (event) => {
+                let lat = Math.round(event.latlng.lat * 100000) / 100000;
+                let lng = Math.round(event.latlng.lng * 100000) / 100000;
+                displayPosition(lat, lng)
+            });
 
 
             /* File upload */
@@ -69,12 +110,13 @@
             function getFuelbedsList(fuelbeds) {
                 if (fuelbeds && fuelbeds.length > 0) {
                     let lis = fuelbeds.map(fb => {
+                        // TODO: Look up Label for the fccsId
                         return `<li>${fb.fccsId} ${fb.pct}% (${fb.count})</li>`
                     })
 
                     return '<ul>' + lis.join('') + '</ul>'
                 } else {
-                    return '<div>(none)</div>'
+                    return '<div class="mx-3 my-1">(none)</div>'
                 }
 
             }
@@ -95,8 +137,8 @@
 
             document.getElementById("file-to-read").addEventListener("change",function(){
                 // Remove the old FCCS layer even if the new file fails to load.
-                // This is so that we don't show the new, failed file name in the
-                // file selector while showing the old data
+                // This is so that we don't show the failed file name in the file
+                // selector while showing the data from the previously loaded file
                 if (fccsLayer)
                     fccsLayer.removeFrom(map)
 
@@ -147,7 +189,6 @@
                     reader.readAsText(file, "UTF-8");
                 }
             },false);
-
         </script>
     </body>
 </html>
