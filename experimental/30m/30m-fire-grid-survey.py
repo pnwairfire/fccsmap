@@ -21,6 +21,10 @@ except:
     pass # TODO: import any required fccsmap modules
 
 
+# TODO: if fire grid is large enough, break it up, work on pieces
+#    individually, then join results
+
+
 EXAMPLES_STRING = """
 Examples:
 
@@ -163,6 +167,12 @@ def get_fccs_grid_rasterio(args, fire_grid):
     with rasterio.open(args.geo_tiff_file) as tiff:
         data = tiff.read(1)
         data = data.astype('int16')
+        crs = tiff.crs
+        res = tiff.res
+
+        # TODO: Can we crop `data` here to exclude anything outside of the
+        #   fire grid (based on `fire_grid.to_crs(crs).total_bounds`)?
+        #   If we can, remove use of `fire_grid_bounds`, below
 
         # TODO: read docs on `mask` kwarg
         # TODO: use other method or package, since docs say that
@@ -171,12 +181,9 @@ def get_fccs_grid_rasterio(args, fire_grid):
         #   https://rasterio.readthedocs.io/en/latest/api/rasterio.features.html
         grid_shapes = rasterio.features.shapes(
             data, mask=None, transform=tiff.transform)
-        crs = tiff.crs
-        res = tiff.res
 
     # We'll use the fire grid total bounds to determine whether or not
     # to include fccs grid cells in the fccs grid dataframe, below
-    # TODO: Can we crop fccs grid earlier,
     fire_grid_bounds = fire_grid.to_crs(crs).total_bounds
 
     logging.info("Collecting lists of grid cell centers and FCCS Ids")
