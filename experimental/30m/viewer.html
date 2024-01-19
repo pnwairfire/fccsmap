@@ -36,11 +36,11 @@
     <body>
         <form id="file-upload-form-container" class="row row-cols-lg-auto m-3 align-items-center" action="/api" method="post" enctype="multipart/form-data">
             <div class="col-12">
-                <input class="form-control" id="file" name="file" type="file"/>
+                <input class="form-control" id="file-to-read" name="file" type="file"/>
             </div>
-            <div class="col-12">
+            <!-- <div class="col-12">
                 <button class="btn btn-sm btn-primary">Upload</button>
-            </div>
+            </div> -->
         </form>
 
         <div id='map'></div>
@@ -57,67 +57,66 @@
                 Topography: L.tileLayer.wms('http://ows.mundialis.de/services/service?',   {layers: 'TOPO-WMS'}),
                 Places: L.tileLayer.wms('http://ows.mundialis.de/services/service?', {layers: 'OSM-Overlay-WMS'})
             };
-            basemaps.StreetView.addTo(map)
-            L.control.layers(basemaps).addTo(map);
+            basemaps.StreetView.addTo(map) // default
+            L.control.layers(basemaps).addTo(map); //
 
 
 
             /* File upload */
 
-            function handleSubmit(event) {
-                const form = event.currentTarget;
-                const url = new URL(form.action);
-                const formData = new FormData(form);
-                const searchParams = new URLSearchParams(formData);
+            let fccsLayer = null
 
-                const fetchOptions = {
-                    method: form.method,
-                };
+            document.getElementById("file-to-read").addEventListener("change",function(){
+                // Remove the old FCCS layer even if the new file fails to load.
+                // This is so that we don't show the new, failed file name in the
+                // file selector while showing the old data
+                if (fccsLayer)
+                    fccsLayer.removeFrom(map)
 
-                if (form.method.toLowerCase() === 'post') {
-                    if (form.enctype === 'multipart/form-data') {
-                        fetchOptions.body = formData;
-                    } else {
-                        fetchOptions.body = searchParams;
-                    }
-                } else {
-                    url.search = searchParams;
+                var file = this.files[0];
+
+                if (file) {
+                    var reader = new FileReader();
+
+                    reader.onload = function (evt) {
+                        //console.log(evt);
+
+                        try {
+                            const data = JSON.parse(evt.target.result)
+
+                            if (data.length > 10000) {
+                                alert(`Too much data (${data.length} grid cells) to view.`)
+                                return
+                            }
+
+                            fccsLayer = L.geoJSON(data, {
+                                style: function(feature) {
+                                    // TODO: color code by feature.properties.fuelbeds
+                                    return {
+                                        weight: 2,
+                                        color: "#999", /* TODO: color code based on FCCS ids */
+                                        opacity: 1,
+                                        fillColor: "#B0DE5C",
+                                        fillOpacity: 0.8
+                                    }
+                                }
+                            }).addTo(map);
+
+                            map.fitBounds(fccsLayer.getBounds())
+
+                        } catch(e) {
+                            alert(`Failed to load ${file}`)
+                        }
+
+                    };
+
+                    reader.onerror = function (evt) {
+                        console.error(`An error ocurred reading ${file}`, evt);
+                    };
+
+                    reader.readAsText(file, "UTF-8");
                 }
-
-                debugger
-                const data = fetch(url, fetchOptions);
-
-                event.preventDefault();
-            }
-
-            const form = document.querySelector('form');
-            form.addEventListener('submit', handleSubmit);
-
-            /* Displaying data */
-
-            function onEachFeature(feature, layer) {
-                let popupContent = `<p>Include information about FCCS ids here</p>`;
-
-                layer.bindPopup(popupContent);
-            }
-
-            // TODO: load data via button to upload
-            let data = []
-
-            const bicycleRentalLayer = L.geoJSON(data, {
-
-                style(feature) {
-                    return {
-                        weight: 2,
-                        color: "#999", /* TODO: color code based on FCCS ids */
-                        opacity: 1,
-                        fillColor: "#B0DE5C",
-                        fillOpacity: 0.8
-                    }
-                },
-
-                onEachFeature
-            }).addTo(map);
+            },false);
 
         </script>
     </body>
