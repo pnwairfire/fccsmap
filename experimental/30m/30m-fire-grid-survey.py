@@ -154,7 +154,7 @@ def get_fccs_grid_rioxarray(args, fire_grid):
     logging.info("Reading FCCS grid tif file with rioxarray")
     raster = rioxarray.open_rasterio(args.geo_tiff_file)
 
-    #get first band of raster
+    # get first band of raster
     band = raster[0]
     x, y, fccs_id = band.x.values, band.y.values, band.values
     x, y = numpy.meshgrid(x, y)
@@ -167,16 +167,6 @@ def get_fccs_grid_rioxarray(args, fire_grid):
     # create new geoseries with centroid geometries
     gdf = geopandas.GeoDataFrame(geometry=geopandas.GeoSeries.from_xy(x, y, crs=band.rio.crs))
     gdf['fccs_id'] = fccs_id
-
-
-    # create new geoseries with pixel geometries
-    # logging.info("Reading FCCS grid tif file with rasterio to get meta data")
-    # with rasterio.open(args.geo_tiff_file) as tiff:
-    #     res = tiff.res
-    #     transform =tiff.transform
-    # pixels = gdf.buffer(res*multiplier, cap_style=3)
-    # polygons = geopandas.GeoDataFrame(geometry=pixels, crs=band.rio.crs)
-    # polygons['fccs_id'] = fccs_id
 
     if band.rio.crs.to_string() != 'EPSG:5070':
         logging.info(f"Transforming FCCS GeoDataFrame from {band.rio.crs.to_string()} to EPSG:5070")
