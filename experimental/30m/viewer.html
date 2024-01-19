@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <base target="_top">
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>GeoJSON tutorial - Leaflet</title>
+
+        <link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />
+
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
+        <style>
+            html, body, #map {
+                height: 100%;
+                width: 100%;
+                margin: 0;
+            }
+            .leaflet-container {
+                height: 400px;
+                width: 600px;
+                max-width: 100%;
+                max-height: 100%;
+            }
+            #file-upload-form-container {
+                position: absolute;
+                z-index: 9999;
+                padding-left: 50px;
+            }
+
+        </style>
+
+    </head>
+    <body>
+        <form id="file-upload-form-container" class="row row-cols-lg-auto m-3 align-items-center" action="/api" method="post" enctype="multipart/form-data">
+            <div class="col-12">
+                <input class="form-control" id="file" name="file" type="file"/>
+            </div>
+            <div class="col-12">
+                <button class="btn btn-sm btn-primary">Upload</button>
+            </div>
+        </form>
+
+        <div id='map'></div>
+
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+        <script>
+            /* map */
+            const map = L.map('map').setView([40, -100], 5);
+
+            const basemaps = {
+                StreetView: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',   {attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}),
+                Topography: L.tileLayer.wms('http://ows.mundialis.de/services/service?',   {layers: 'TOPO-WMS'}),
+                Places: L.tileLayer.wms('http://ows.mundialis.de/services/service?', {layers: 'OSM-Overlay-WMS'})
+            };
+            basemaps.StreetView.addTo(map)
+            L.control.layers(basemaps).addTo(map);
+
+
+
+            /* File upload */
+
+            function handleSubmit(event) {
+                const form = event.currentTarget;
+                const url = new URL(form.action);
+                const formData = new FormData(form);
+                const searchParams = new URLSearchParams(formData);
+
+                const fetchOptions = {
+                    method: form.method,
+                };
+
+                if (form.method.toLowerCase() === 'post') {
+                    if (form.enctype === 'multipart/form-data') {
+                        fetchOptions.body = formData;
+                    } else {
+                        fetchOptions.body = searchParams;
+                    }
+                } else {
+                    url.search = searchParams;
+                }
+
+                debugger
+                const data = fetch(url, fetchOptions);
+
+                event.preventDefault();
+            }
+
+            const form = document.querySelector('form');
+            form.addEventListener('submit', handleSubmit);
+
+            /* Displaying data */
+
+            function onEachFeature(feature, layer) {
+                let popupContent = `<p>Include information about FCCS ids here</p>`;
+
+                layer.bindPopup(popupContent);
+            }
+
+            // TODO: load data via button to upload
+            let data = []
+
+            const bicycleRentalLayer = L.geoJSON(data, {
+
+                style(feature) {
+                    return {
+                        weight: 2,
+                        color: "#999", /* TODO: color code based on FCCS ids */
+                        opacity: 1,
+                        fillColor: "#B0DE5C",
+                        fillOpacity: 0.8
+                    }
+                },
+
+                onEachFeature
+            }).addTo(map);
+
+        </script>
+    </body>
+</html>
