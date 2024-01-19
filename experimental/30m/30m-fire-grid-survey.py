@@ -238,7 +238,9 @@ def get_all_fuelbeds_per_grid_cell(fire_grid, fccs_grid):
         all_fuelbeds[idx] = {
             k: {
                 'pct': 100.0 * cell['counts'][k] / cell['total'],
-                'count': cell['counts'][k]
+                # If we don't cast `count` to int, we get an error when dumping to JSON:
+                #   *** TypeError: Object of type int64 is not JSON serializable
+                'count': int(cell['counts'][k])
             } for k in cell['counts']
         }
 
