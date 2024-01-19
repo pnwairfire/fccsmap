@@ -254,22 +254,23 @@ def prune(all_fuelbeds):
     # Keep only the most prevalent FCCS IDs that comprise 90% of the
     #    remaining cells.   Potentially: Truncate to 5 FCCS IDs max.
     #    Renormalize to the truncated total.
-    included = defaultdict(lambda: {})
-    truncated = defaultdict(lambda: {})
-    excluded = defaultdict(lambda: {})
+    included = defaultdict(lambda: [])
+    truncated = defaultdict(lambda: [])
+    excluded = defaultdict(lambda: [])
     for idx in all_fuelbeds:
         total_pct = 0
         total_num = 0
         for fccs_id, d in sorted(all_fuelbeds[idx].items(), key=lambda e: -e[1]['pct']):
+            fb = {'fccsId': fccs_id, **all_fuelbeds[idx][fccs_id]}
             if do_exclude(fccs_id):
-                excluded[idx][fccs_id] = all_fuelbeds[idx][fccs_id]
+                excluded[idx].append(fb)
             elif (total_pct >= TRUNCATION_PCT_THRESHOLD
                     or (TRUNCATION_NUM_THRESHOLD and total_num >= TRUNCATION_NUM_THRESHOLD)):
-                truncated[idx][fccs_id] = all_fuelbeds[idx][fccs_id]
+                truncated[idx].append(fb)
             else:
-                included[idx][fccs_id] = all_fuelbeds[idx][fccs_id]
+                included[idx].append(fb)
 
-            total_pct += all_fuelbeds[idx][fccs_id]['pct']
+            total_pct += fb['pct']
             total_num += 1
 
     return included, truncated, excluded
@@ -305,7 +306,7 @@ if __name__ == '__main__':
                 'fuelbeds': included[i],
                 'excluded': excluded[i],
                 'truncated': truncated[i],
-                'lat_lng_indiices': fire_grid.lt_ln[i],
+                'latLngIndiices': fire_grid.lt_ln[i],
             },
             "id": i
         }
