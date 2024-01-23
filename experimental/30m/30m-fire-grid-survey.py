@@ -267,7 +267,12 @@ def get_all_fuelbeds_per_grid_cell(fire_grid, fccs_grid):
     return all_fuelbeds
 
 def do_exclude(fccs_id):
-    # TODO: implemented
+    fccs_id = int(fccs_id)
+    if fccs_id < 1:
+        # 0 (bare ground) or negative values (which mean what?)
+        return True
+
+    # TODO: other cases?
     return False
 
 def prune(all_fuelbeds):
