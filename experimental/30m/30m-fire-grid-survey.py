@@ -52,11 +52,12 @@ Examples:
       -f ~/WFEIS-30m-FCCS-LANDFIRE-data/LF2022_FCCS_220_HI/Tif/LH22_FCCS_220.tif \\
       -j ./30m-fccs-HawaiiBigIsland-output.json
 
-  Area on Maui
+  Area on Maui, using rioxarray
 
     {script} -w -156.3 -e -156.2 -s 20.7 -n 20.8 \\
       -f ~/WFEIS-30m-FCCS-LANDFIRE-data/LF2022_FCCS_220_HI/Tif/LH22_FCCS_220.tif \\
-      -j ./30m-fccs-HawaiiMaui-output.json
+      -j ./30m-fccs-HawaiiMaui-output-rioxarray.json \\
+      --tiff-load-implementation rioxarray
  """.format(script=sys.argv[0])
 
 def parse_args():
