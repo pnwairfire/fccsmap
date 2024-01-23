@@ -284,6 +284,7 @@ def recalculate_pcts(fuelbeds):
 
 
 def prune(all_fuelbeds):
+    logging.info("Pruning fuelbeds")
     # Keep only the most prevalent FCCS IDs that comprise 90% of the
     #    remaining cells.   Potentially: Truncate to 5 FCCS IDs max.
     #    Renormalize to the truncated total.
