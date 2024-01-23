@@ -275,6 +275,14 @@ def do_exclude(fccs_id):
     # TODO: other cases?
     return False
 
+def recalculate_pcts(fuelbeds):
+    for i in fuelbeds:
+        total = reduce(lambda a,b: a + b['pct'], fuelbeds[i], 0)
+        nfactor = 100 / total
+        for fb in fuelbeds[i]:
+            fb['npct'] = nfactor * fb['pct']
+
+
 def prune(all_fuelbeds):
     # Keep only the most prevalent FCCS IDs that comprise 90% of the
     #    remaining cells.   Potentially: Truncate to 5 FCCS IDs max.
@@ -298,6 +306,12 @@ def prune(all_fuelbeds):
             total_pct += fb['pct']
             total_num += 1
 
+    logging.info("Recalculating %'s")
+    recalculate_pcts(included)
+    recalculate_pcts(truncated)
+    recalculate_pcts(excluded)
+
+    logging.info("Done pruning fuelbeds and recalculating %'s")
     return included, truncated, excluded
 
 OUTPUT_CRS = 'EPSG:4326'
