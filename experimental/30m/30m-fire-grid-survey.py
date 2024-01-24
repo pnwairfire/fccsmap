@@ -66,12 +66,12 @@ Examples:
       -f ~/WFEIS-30m-FCCS-LANDFIRE-data/LF2022_FCCS_220_HI/Tif/LH22_FCCS_220.tif \\
       -j {output_dirname}/30m-fccs-HawaiiBigIsland-output.json
 
-  Area on Maui, using rioxarray
+  Area on Maui, using rasterio
 
     {script} -w -156.3 -e -156.2 -s 20.7 -n 20.8 \\
       -f ~/WFEIS-30m-FCCS-LANDFIRE-data/LF2022_FCCS_220_HI/Tif/LH22_FCCS_220.tif \\
-      -j {output_dirname}/30m-fccs-HawaiiMaui-output-rioxarray.json \\
-      --tiff-load-implementation rioxarray
+      -j {output_dirname}/30m-fccs-HawaiiMaui-output-rasterio.json \\
+      --tiff-load-implementation rasterio
  """.format(script=sys.argv[0],
         output_dirname=os.path.join(os.path.dirname(sys.argv[0]), 'output'))
 
@@ -95,7 +95,7 @@ def parse_args():
         help="full pathname of CSV output file to be generated")
     parser.add_argument('--shapefile-output',
         help="full pathname of shapefile to be generated")
-    parser.add_argument('--tiff-load-implementation', default='rasterio',
+    parser.add_argument('--tiff-load-implementation', default='rioxarray',
         help="options: 'rasterio', 'rioxarray'")
 
     parser.add_argument('--log-level', default='INFO', help="Log level")
@@ -205,6 +205,12 @@ def get_fccs_grid_rioxarray(cropped_tiff_file):
     return gdf
 
 def get_fccs_grid_rasterio(cropped_tiff_file):
+
+    # TODO: Using rasterio, we're getting a range of values for the total
+    #    count of FCCS grid cells within each fire grid cell. Using rioxarray,
+    #    on the other hand, we get ~10000 per cell (which is correct,
+    #    given that the FCCS grid is 30m and the fire grid is 3000m)
+
     # read the data and create the shapes
     logging.info("Reading FCCS grid tif file with rasterio")
     with rasterio.open(cropped_tiff_file) as tiff:
