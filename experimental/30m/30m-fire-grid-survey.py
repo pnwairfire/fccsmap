@@ -6,9 +6,11 @@ import importlib
 import json
 import logging
 import sys
+import typing
 from collections import defaultdict
 from functools import reduce
 
+import geopandas
 import numpy
 import rasterio
 import rasterio.features
@@ -97,18 +99,14 @@ def parse_args():
 # The following was copied from from FIS and modified slightly
 #    pnwairfire-fire-information-systems/fire-grid/define_grid.py
 
-from typing import *
-import numpy
-import geopandas
-from shapely.geometry import Polygon
 
-def define_grid_proj(bbox: List[float], res: float) -> geopandas.GeoDataFrame:
+def define_grid_proj(bbox: typing.List[float], res: float) -> geopandas.GeoDataFrame:
     # wgs84 polygon box (main)
     ll = (bbox[0], bbox[2])
     ul = (bbox[0], bbox[3])
     ur = (bbox[1], bbox[3])
     lr = (bbox[1], bbox[2])
-    wgs84_box = geopandas.GeoDataFrame({'geometry': [Polygon([ll, ul, ur, lr])]}, crs="EPSG:4326")
+    wgs84_box = geopandas.GeoDataFrame({'geometry': [shapely.Polygon([ll, ul, ur, lr])]}, crs="EPSG:4326")
 
     # to albers
     epsg5070_box = wgs84_box.to_crs('EPSG:5070')
@@ -130,7 +128,7 @@ def define_grid_proj(bbox: List[float], res: float) -> geopandas.GeoDataFrame:
             ul = (x_array[ln], y_array[lt] + res)
             ur = (x_array[ln] + res, y_array[lt] + res)
             lr = (x_array[ln] + res, y_array[lt])
-            polygons.append(Polygon([ll, ul, ur, lr]))
+            polygons.append(shapely.Polygon([ll, ul, ur, lr]))
             lt_ln.append([lt, ln])
 
     return geopandas.GeoDataFrame({
