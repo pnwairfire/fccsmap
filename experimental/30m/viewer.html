@@ -110,7 +110,7 @@
                 if (fuelbeds && fuelbeds.length > 0) {
                     let lis = fuelbeds.map(fb => {
                         // TODO: Look up Label for the fccsId
-                        return `<li>${fb.fccsId} ${fb.pct}% (${fb.count})</li>`
+                        return `<li>${fb.fccsId}: ${fb.npct.toLocaleString()}% (${fb.count})</li>`
                     })
 
                     return '<ul>' + lis.join('') + '</ul>'
