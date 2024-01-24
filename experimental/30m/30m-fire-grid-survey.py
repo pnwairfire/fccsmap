@@ -191,6 +191,9 @@ def get_fccs_grid_rasterio(args, fire_grid):
         crs = tiff.crs
         res = tiff.res
 
+        # TODO: create centroids directly from raster data?
+        #https://gis.stackexchange.com/questions/436022/finding-the-centroid-of-every-pixel-in-a-raster-python
+
         # TODO: Can we crop `data` here to exclude anything outside of the
         #   fire grid (based on `fire_grid.to_crs(crs).total_bounds`)?
         #   If we can, remove use of `fire_grid_bounds`, below
