@@ -5,12 +5,15 @@ import csv
 import importlib
 import json
 import logging
+import sys
+from collections import defaultdict
+from functools import reduce
+
+import numpy
 import rasterio
 import rasterio.features
 import rioxarray
 import shapely
-import sys
-from collections import defaultdict
 
 try:
     pass # TODO: import any required fccsmap modules
@@ -281,7 +284,6 @@ def recalculate_pcts(fuelbeds):
         nfactor = 100 / total
         for fb in fuelbeds[i]:
             fb['npct'] = nfactor * fb['pct']
-
 
 def prune(all_fuelbeds):
     logging.info("Pruning fuelbeds")
