@@ -133,15 +133,12 @@
                 return content
             }
 
-
-            document.getElementById("file-to-read").addEventListener("change",function(){
+            function loadFile(file) {
                 // Remove the old FCCS layer even if the new file fails to load.
                 // This is so that we don't show the failed file name in the file
                 // selector while showing the data from the previously loaded file
                 if (fccsLayer)
                     fccsLayer.removeFrom(map)
-
-                var file = this.files[0];
 
                 if (file) {
                     var reader = new FileReader();
@@ -169,7 +166,10 @@
                                     }
                                 },
                                 onEachFeature: (feature, layer) => {
-                                    layer.bindPopup(getPopupContent(feature));
+                                    layer.bindPopup(getPopupContent(feature),{
+                                        // maxHeight: 200,
+                                        // minWidth: 100
+                                    });
                                 }
                             }).addTo(map);
 
@@ -187,7 +187,12 @@
 
                     reader.readAsText(file, "UTF-8");
                 }
-            },false);
+            }
+
+            document.getElementById("file-to-read").addEventListener("change",function(){
+                    loadFile(this.files[0])
+                },
+            false);
         </script>
     </body>
 </html>
