@@ -66,12 +66,11 @@ Examples:
       -f ~/WFEIS-30m-FCCS-LANDFIRE-data/LF2022_FCCS_220_HI/Tif/LH22_FCCS_220.tif \\
       -j {output_dirname}/30m-fccs-HawaiiBigIsland-output.json
 
-  Area on Maui, using rasterio
+  Area on Maui
 
     {script} -w -156.3 -e -156.2 -s 20.7 -n 20.8 \\
       -f ~/WFEIS-30m-FCCS-LANDFIRE-data/LF2022_FCCS_220_HI/Tif/LH22_FCCS_220.tif \\
-      -j {output_dirname}/30m-fccs-HawaiiMaui-output-rasterio.json \\
-      --tiff-load-implementation rasterio
+      -j {output_dirname}/30m-fccs-HawaiiMaui-output.json
  """.format(script=sys.argv[0],
         output_dirname=os.path.join(os.path.dirname(sys.argv[0]), 'output'))
 
@@ -95,8 +94,6 @@ def parse_args():
         help="full pathname of CSV output file to be generated")
     parser.add_argument('--shapefile-output',
         help="full pathname of shapefile to be generated")
-    parser.add_argument('--tiff-load-implementation', default='rioxarray',
-        help="options: 'rasterio', 'rioxarray'")
 
     parser.add_argument('--log-level', default='INFO', help="Log level")
 
@@ -182,7 +179,7 @@ def crop_tiff_file(tiff_file, fire_grid):
 
         return cropped_tiff_file
 
-def get_fccs_grid_rioxarray(cropped_tiff_file):
+def get_fccs_grid(cropped_tiff_file):
     # See https://gis.stackexchange.com/questions/365538/exporting-geotiff-raster-to-geopandas-dataframe
 
     logging.info("Reading FCCS grid tif file with rioxarray")
@@ -191,12 +188,15 @@ def get_fccs_grid_rioxarray(cropped_tiff_file):
     # get first band of raster
     band = raster[0]
     x, y, fccs_id = band.x.values, band.y.values, band.values
+    # TODO: what do the following to steps do?
     x, y = numpy.meshgrid(x, y)
     x, y, fccs_id = x.flatten(), y.flatten(), fccs_id.flatten()
 
     # create new geoseries with centroid geometries
-    gdf = geopandas.GeoDataFrame(geometry=geopandas.GeoSeries.from_xy(x, y, crs=band.rio.crs))
-    gdf['fccs_id'] = fccs_id
+    gdf = geopandas.GeoDataFrame({
+        'geometry': geopandas.GeoSeries.from_xy(x, y, crs=band.rio.crs),
+        'fccs_id': fccs_id,
+    })
 
     if band.rio.crs.to_string() != 'EPSG:5070':
         logging.info(f"Transforming FCCS GeoDataFrame from {band.rio.crs.to_string()} to EPSG:5070")
@@ -204,61 +204,10 @@ def get_fccs_grid_rioxarray(cropped_tiff_file):
 
     return gdf
 
-def get_fccs_grid_rasterio(cropped_tiff_file):
 
-    # TODO: Using rasterio, we're getting a range of values for the total
-    #    count of FCCS grid cells within each fire grid cell. Using rioxarray,
-    #    on the other hand, we get ~10000 per cell (which is correct,
-    #    given that the FCCS grid is 30m and the fire grid is 3000m)
-
-    # read the data and create the shapes
-    logging.info("Reading FCCS grid tif file with rasterio")
-    with rasterio.open(cropped_tiff_file) as tiff:
-        # The tiff object has the following attrs
-        #  bounds e.g.:  BoundingBox(left=-2362395.000000002, bottom=221265.00000000373, right=2327654.999999998, top=3267405.0000000037)
-        #  crs, e.g.: CRS.from_epsg(5070)
-        #  res, e.g.: (30.0, 30.0)
-        #  shape, e.g.: (101538, 156335)
-        data = tiff.read(1)
-        data = data.astype('int16')
-        crs = tiff.crs
-        res = tiff.res
-
-        # TODO: create centroids directly from raster data?
-        #    Emulate code in get_fccs_grid_rioxarray, above,
-        #    along with in following link:
-        #https://gis.stackexchange.com/questions/436022/finding-the-centroid-of-every-pixel-in-a-raster-python
-
-        # TODO: read docs on `mask` kwarg
-        # TODO: use other method or package, since docs say that
-        #   that it uses large amounts of memory when there's high
-        #   pixel-to-variability
-        #   https://rasterio.readthedocs.io/en/latest/api/rasterio.features.html
-        grid_shapes = rasterio.features.shapes(
-            data, mask=None, transform=tiff.transform)
-
-    logging.info("Collecting lists of grid cell centers and FCCS Ids")
-    # read the shapes as separate lists
-    fccs_ids = []
-    geometry = []
-    for shape, value in grid_shapes:
-        # We'll use centroids of FCCS grid cells to speed up spatial joins, below
-        centroid = shapely.geometry.shape(shape).centroid
-        geometry.append(centroid)
-        fccs_ids.append(value)
-
-    # build the gdf object over the two lists
-    logging.info("Building FCCS GeoDataFrame")
-    gdf = geopandas.GeoDataFrame({
-            'fccs_id': fccs_ids,
-            'geometry': geometry
-        }, crs=crs)
-
-    if  crs.to_string() != 'EPSG:5070':
-        logging.info(f"Transforming FCCS GeoDataFrame from {crs.to_string()} to EPSG:5070")
-        gdf = gdf.to_crs('EPSG:5070')
-
-    return gdf
+##
+## Process fuelbeds
+##
 
 TRUNCATION_PCT_THRESHOLD = 90
 TRUNCATION_NUM_THRESHOLD = None
@@ -352,11 +301,7 @@ if __name__ == '__main__':
     cropped_tiff_file = crop_tiff_file(args.geo_tiff_file, fire_grid)
 
     logging.info("Loading FCCS grid")
-    f = globals().get(f"get_fccs_grid_{args.tiff_load_implementation}")
-    if not f:
-        raise RuntimeError("Invalid tiff file load implementation - "
-            f"{args.tiff_load_implementation}")
-    fccs_grid = f(cropped_tiff_file)
+    fccs_grid = get_fccs_grid(cropped_tiff_file)
 
     logging.info("Determining fuelbeds per grid cell")
     all_fuelbeds = get_all_fuelbeds_per_grid_cell(fire_grid, fccs_grid)
