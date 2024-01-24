@@ -17,6 +17,7 @@ import rasterio
 import rasterio.features
 import rioxarray
 import shapely
+from osgeo import gdal
 
 try:
     pass # TODO: import any required fccsmap modules
@@ -96,13 +97,14 @@ def parse_args():
     parser.formatter_class = argparse.RawTextHelpFormatter
     return parser.parse_args()
 
-
-###############################################################################
-# The following was copied from from FIS and modified slightly
-#    pnwairfire-fire-information-systems/fire-grid/define_grid.py
-
+##
+## Fire Grid
+##
 
 def define_grid_proj(bbox: typing.List[float], res: float) -> geopandas.GeoDataFrame:
+    """The following was copied from from FIS and modified slightly
+    pnwairfire-fire-information-systems/fire-grid/define_grid.py
+    """
     # wgs84 polygon box (main)
     ll = (bbox[0], bbox[2])
     ul = (bbox[0], bbox[3])
@@ -139,8 +141,6 @@ def define_grid_proj(bbox: typing.List[float], res: float) -> geopandas.GeoDataF
         }, crs="EPSG:5070")
 
 
-###############################################################################
-
 def get_fire_grid(args):
     bounds = [
         args.fire_grid_bounds_west,
@@ -152,21 +152,40 @@ def get_fire_grid(args):
 
     return grid
 
-def get_fccs_grid_rioxarray(args, fire_grid):
+##
+## FCCS Grid
+##
+
+def crop_tiff_file(tiff_file, fire_grid):
+
+    with rasterio.open(args.geo_tiff_file) as tiff:
+        # total_bounds returns an array like:
+        #   array([ 64781.47742873, 847703.76037809,  93523.38640148, 877718.77342049])
+        # which is
+        #   [left, bottom, right, top]
+        fg_bounds = fire_grid.to_crs(tiff.crs).total_bounds
+
+        # window need to be (left, top, right, bottom)
+        window = (fg_bounds[0], fg_bounds[3], fg_bounds[2], fg_bounds[1])
+
+        cropped_tiff_file = '/tmp/' + os.path.basename(args.geo_tiff_file).replace('.tif', '-cropped.tif')
+
+        #gdal.Translate(cropped_tiff_file, tiff, projWin=tuple(window))
+        gdal.Translate(cropped_tiff_file, args.geo_tiff_file, projWin=window)
+
+        return cropped_tiff_file
+
+def get_fccs_grid_rioxarray(cropped_tiff_file):
     # See https://gis.stackexchange.com/questions/365538/exporting-geotiff-raster-to-geopandas-dataframe
 
     logging.info("Reading FCCS grid tif file with rioxarray")
-    raster = rioxarray.open_rasterio(args.geo_tiff_file)
+    raster = rioxarray.open_rasterio(cropped_tiff_file)
 
     # get first band of raster
     band = raster[0]
     x, y, fccs_id = band.x.values, band.y.values, band.values
     x, y = numpy.meshgrid(x, y)
     x, y, fccs_id = x.flatten(), y.flatten(), fccs_id.flatten()
-
-    # TODO: Can we crop data here to exclude anything outside of the
-    #   fire grid (based on `fire_grid.to_crs(crs).total_bounds`)?
-    #   If we can, remove use of `fire_grid_bounds`, below
 
     # create new geoseries with centroid geometries
     gdf = geopandas.GeoDataFrame(geometry=geopandas.GeoSeries.from_xy(x, y, crs=band.rio.crs))
@@ -178,11 +197,10 @@ def get_fccs_grid_rioxarray(args, fire_grid):
 
     return gdf
 
-def get_fccs_grid_rasterio(args, fire_grid):
-
+def get_fccs_grid_rasterio(cropped_tiff_file):
     # read the data and create the shapes
     logging.info("Reading FCCS grid tif file with rasterio")
-    with rasterio.open(args.geo_tiff_file) as tiff:
+    with rasterio.open(cropped_tiff_file) as tiff:
         # The tiff object has the following attrs
         #  bounds e.g.:  BoundingBox(left=-2362395.000000002, bottom=221265.00000000373, right=2327654.999999998, top=3267405.0000000037)
         #  crs, e.g.: CRS.from_epsg(5070)
@@ -198,10 +216,6 @@ def get_fccs_grid_rasterio(args, fire_grid):
         #    along with in following link:
         #https://gis.stackexchange.com/questions/436022/finding-the-centroid-of-every-pixel-in-a-raster-python
 
-        # TODO: Can we crop `data` here to exclude anything outside of the
-        #   fire grid (based on `fire_grid.to_crs(crs).total_bounds`)?
-        #   If we can, remove use of `fire_grid_bounds`, below
-
         # TODO: read docs on `mask` kwarg
         # TODO: use other method or package, since docs say that
         #   that it uses large amounts of memory when there's high
@@ -210,26 +224,15 @@ def get_fccs_grid_rasterio(args, fire_grid):
         grid_shapes = rasterio.features.shapes(
             data, mask=None, transform=tiff.transform)
 
-    # We'll use the fire grid total bounds to determine whether or not
-    # to include fccs grid cells in the fccs grid dataframe, below
-    fire_grid_bounds = fire_grid.to_crs(crs).total_bounds
-
     logging.info("Collecting lists of grid cell centers and FCCS Ids")
     # read the shapes as separate lists
     fccs_ids = []
     geometry = []
-    omitted = 0
     for shape, value in grid_shapes:
         # We'll use centroids of FCCS grid cells to speed up spatial joins, below
         centroid = shapely.geometry.shape(shape).centroid
-        if (centroid.x >= fire_grid_bounds[0] and centroid.x <= fire_grid_bounds[2]
-                and centroid.y >= fire_grid_bounds[1] and centroid.x <= fire_grid_bounds[3]):
-            geometry.append(centroid)
-            fccs_ids.append(value)
-        else:
-            omitted += 1
-
-    logging.info(f"Kept {len(geometry)} FCCS grid cells and omitted {omitted}")
+        geometry.append(centroid)
+        fccs_ids.append(value)
 
     # build the gdf object over the two lists
     logging.info("Building FCCS GeoDataFrame")
@@ -243,7 +246,6 @@ def get_fccs_grid_rasterio(args, fire_grid):
         gdf = gdf.to_crs('EPSG:5070')
 
     return gdf
-
 
 TRUNCATION_PCT_THRESHOLD = 90
 TRUNCATION_NUM_THRESHOLD = None
@@ -330,19 +332,24 @@ if __name__ == '__main__':
     logging.basicConfig(format='%(asctime)s [%(levelname)s]:%(message)s',
         level=getattr(logging, args.log_level))
 
-    logging.info("Getting fire grid")
+    logging.info("Computing fire grid")
     fire_grid = get_fire_grid(args)
 
-    logging.info("Getting FCCS grid")
+    logging.info("Cropping tiff file")
+    cropped_tiff_file = crop_tiff_file(args.geo_tiff_file, fire_grid)
+
+    logging.info("Loading FCCS grid")
     f = globals().get(f"get_fccs_grid_{args.tiff_load_implementation}")
     if not f:
         raise RuntimeError("Invalid tiff file load implementation - "
             f"{args.tiff_load_implementation}")
-    fccs_grid = f(args, fire_grid)
+    fccs_grid = f(cropped_tiff_file)
 
+    logging.info("Determining fuelbeds per grid cell")
     all_fuelbeds = get_all_fuelbeds_per_grid_cell(fire_grid, fccs_grid)
     included, truncated, excluded = prune(all_fuelbeds)
 
+    logging.info("Forming output")
     results = []
     output_fire_grid = fire_grid.to_crs(OUTPUT_CRS)
     for i, fire_grid_polygon in enumerate(output_fire_grid.geometry):
@@ -364,6 +371,7 @@ if __name__ == '__main__':
         results.append(e)
 
     if args.json_output_file:
+        logging.info("Writing json output")
         with open(args.json_output_file, 'w') as f:
             f.write(json.dumps(results))
 
