@@ -41,6 +41,13 @@ Examples:
       -f ~/WFEIS-30m-FCCS-LANDFIRE-data/LF2022_FCCS_220_CONUS/Tif/LC22_FCCS_220.tif \\
       -j {output_dirname}/30m-fccs-Lower48-output.json
 
+
+  PNW 1.33km met bounds
+
+    {script} -w -126.0 -e -111.0 -s 41.75 -n 49.25 \\
+      -f ~/WFEIS-30m-FCCS-LANDFIRE-data/LF2022_FCCS_220_CONUS/Tif/LC22_FCCS_220.tif \\
+      -j {output_dirname}/30m-fccs-PNW-1.33km-output.json
+
   Area around Winthrop, WA
 
     {script} -w -120.3 -e -120.1 -s 48.4 -n 48.5 \\
