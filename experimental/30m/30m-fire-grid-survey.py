@@ -194,6 +194,8 @@ def get_fccs_grid_rasterio(args, fire_grid):
         res = tiff.res
 
         # TODO: create centroids directly from raster data?
+        #    Emulate code in get_fccs_grid_rioxarray, above,
+        #    along with in following link:
         #https://gis.stackexchange.com/questions/436022/finding-the-centroid-of-every-pixel-in-a-raster-python
 
         # TODO: Can we crop `data` here to exclude anything outside of the
