@@ -149,7 +149,7 @@
                         try {
                             const data = JSON.parse(evt.target.result)
 
-                            if (data.length > 10000) {
+                            if (data.length > 25000) {
                                 alert(`Too much data (${data.length} grid cells) to view.`)
                                 return
                             }
@@ -159,10 +159,10 @@
                                     // TODO: color code by feature.properties.fuelbeds
                                     return {
                                         weight: 2,
-                                        color: "#999", /* TODO: color code based on FCCS ids */
+                                        color: "#fff", /* TODO: color code based on FCCS ids */
                                         opacity: 1,
-                                        fillColor: "#B0DE5C",
-                                        fillOpacity: 0.8
+                                        fillColor: "#fff",
+                                        fillOpacity: 0.2
                                     }
                                 },
                                 onEachFeature: (feature, layer) => {
