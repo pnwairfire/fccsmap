@@ -113,9 +113,13 @@
                         return `<li>${fb.fccsId}: ${fb.npct.toLocaleString()}% (${fb.count})</li>`
                     })
 
-                    return '<ul>' + lis.join('') + '</ul>'
+                    let total = fuelbeds.reduce((r,fb) => r+fb.count, 0)
+
+                    return '<div class="my-2"><ul class="my-1">' + lis.join('') + '</ul>'
+                        + '<div class="ms-5 my-1">(total: '
+                        + total +')</div></div>'
                 } else {
-                    return '<div class="mx-3 my-1">(none)</div>'
+                    return '<div class="ms-5 my-1">(none)</div>'
                 }
 
             }
@@ -123,11 +127,13 @@
             function getPopupContent(feature) {
                 const props = feature.properties
                 let content = '<div>'
-                    +'<div>Fuelbeds</div>'
+                    +'<div style="font-weight: bold;">Fuelbeds</div>'
                     + getFuelbedsList(props.fuelbeds)
-                    +'<div>Truncated</div>'
+                    + '<hr />'
+                    +'<div style="font-weight: bold;">Truncated</div>'
                     + getFuelbedsList(props.truncated)
-                    +'<div>Excluded</div>'
+                    + '<hr />'
+                    +'<div style="font-weight: bold;">Excluded</div>'
                     + getFuelbedsList(props.excluded)
                     + '</div>'
                 return content
