@@ -177,15 +177,15 @@ def get_fccs_grid_rioxarray(args, fire_grid):
     return gdf
 
 def get_fccs_grid_rasterio(args, fire_grid):
-    # The tiff object has the following attrs
-    #  bounds e.g.:  BoundingBox(left=-2362395.000000002, bottom=221265.00000000373, right=2327654.999999998, top=3267405.0000000037)
-    #  crs, e.g.: CRS.from_epsg(5070)
-    #  res, e.g.: (30.0, 30.0)
-    #  shape, e.g.: (101538, 156335)
 
     # read the data and create the shapes
     logging.info("Reading FCCS grid tif file with rasterio")
     with rasterio.open(args.geo_tiff_file) as tiff:
+        # The tiff object has the following attrs
+        #  bounds e.g.:  BoundingBox(left=-2362395.000000002, bottom=221265.00000000373, right=2327654.999999998, top=3267405.0000000037)
+        #  crs, e.g.: CRS.from_epsg(5070)
+        #  res, e.g.: (30.0, 30.0)
+        #  shape, e.g.: (101538, 156335)
         data = tiff.read(1)
         data = data.astype('int16')
         crs = tiff.crs
