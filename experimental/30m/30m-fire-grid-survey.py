@@ -263,9 +263,9 @@ def get_all_fuelbeds_per_grid_cell(fire_grid, fccs_grid):
 
     counts = defaultdict(lambda: {'counts': {}, 'total': 0})
     for _, obj in fpg.iterrows():
-        idx = int(obj.index_fire_grid)
-        fccs_id = str(int(obj.fccs_id))
-        count = obj.count()
+        idx = int(obj.get('index_fire_grid'))
+        fccs_id = str(int(obj.get('fccs_id')))
+        count = int(obj.get('count'))
         counts[idx]['counts'][fccs_id] = count
         counts[idx]['total'] += count
 
