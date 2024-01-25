@@ -13,7 +13,7 @@ class TestFccsLookUp(object):
     sense for each location.)
     """
 
-    def setup(self):
+    def setup_method(self):
         self._lookup = FccsLookUp()
 
     def test_point(self):
@@ -189,7 +189,7 @@ class TestFccsLookUp(object):
 
 class TestFccsLookUpTransformPoints(object):
 
-    def setup(self):
+    def setup_method(self):
         self._lookup = FccsLookUp()
 
     def test_point(self):
@@ -246,7 +246,7 @@ class TestFccsLookUpTransformPoints(object):
 
 class TestFccsLookUpHasHighPercentOfIgnored(object):
 
-    def setup(self):
+    def setup_method(self):
         self._lookup = FccsLookUp()
 
     def test_one_good(self):
@@ -332,7 +332,7 @@ class TestFccsLookUpHasHighPercentOfIgnored(object):
 
 class TestFccsLookupComputeTotalPercentIgnored(object):
 
-    def setup(self):
+    def setup_method(self):
         self._lookup = FccsLookUp()
 
     def test_one_good(self):
@@ -418,7 +418,7 @@ class TestFccsLookupComputeTotalPercentIgnored(object):
 
 class TestFccsLookupComputePercentages(object):
 
-    def setup(self):
+    def setup_method(self):
         self._lookup = FccsLookUp()
 
     def test_none(self):
@@ -486,7 +486,7 @@ class TestFccsLookupComputePercentages(object):
 
 class TestFccsLookupRemoveIgnored(object):
 
-    def setup(self):
+    def setup_method(self):
         self._lookup = FccsLookUp()
 
     def test_no_ignored(self):
@@ -578,7 +578,7 @@ class TestFccsLookupRemoveIgnored(object):
 
 class TestFccsLookupRemoveInsignificant(object):
 
-    def setup(self):
+    def setup_method(self):
         self._lookup = FccsLookUp()
 
     def test_empty_fuelbeds(self):
@@ -643,7 +643,7 @@ class TestFccsLookupRemoveInsignificant(object):
 
 class TestFccsLookupReadjustPercentages(object):
 
-    def setup(self):
+    def setup_method(self):
         self._lookup = FccsLookUp()
 
     def test_empty(self):
