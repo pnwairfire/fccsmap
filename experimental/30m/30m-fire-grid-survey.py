@@ -342,6 +342,9 @@ if __name__ == '__main__':
         logging.info("Writing json output")
         with open(args.json_output_file, 'w') as f:
             f.write(json.dumps(results))
+        # The following produces a huge file, compared to the main output file
+        # with open(args.json_output_file.replace('.json', '-fccs-grid.json'), 'w') as f:
+        #     f.write(fccs_grid.to_json())
 
     if args.csv_output_file:
         logging.warning("CSV output not yet implemented")
