@@ -180,8 +180,18 @@ def crop_tiff_file(tiff_file, fire_grid):
         return cropped_tiff_file
 
 def get_fccs_grid(cropped_tiff_file):
-    # See https://gis.stackexchange.com/questions/365538/exporting-geotiff-raster-to-geopandas-dataframe
+    # Note: the following produced the same gdf, but too > 20x as long
+    #  See https://gis.stackexchange.com/questions/394455/how-to-find-coordinates-of-pixels-of-a-geotiff-image-with-python
+    #     rds = rioxarray.open_rasterio(cropped_tiff_file)
+    #     crs = rds[0].rio.crs.to_string()
+    #     rds = rds.squeeze().drop("spatial_ref").drop("band")
+    #     rds.name = "fccs_id"
+    #     df = rds.to_dataframe().reset_index()
+    #     geometry = [shapely.Point(xy) for xy in zip(df.x, df.y)]
+    #     df = df.drop(['x', 'y'], axis=1)
+    #     gdf = geopandas.GeoDataFrame(df, crs=crs, geometry=geometry)
 
+    # See https://gis.stackexchange.com/questions/365538/exporting-geotiff-raster-to-geopandas-dataframe
     logging.info("Reading FCCS grid tif file with rioxarray")
     raster = rioxarray.open_rasterio(cropped_tiff_file)
 
