@@ -257,12 +257,16 @@ def do_exclude(fccs_id):
     # TODO: other cases?
     return False
 
-def recalculate_pcts(fuelbeds):
-    for i in fuelbeds:
-        total = reduce(lambda a,b: a + b['pct'], fuelbeds[i], 0)
-        nfactor = 100 / total
-        for fb in fuelbeds[i]:
-            fb['npct'] = nfactor * fb['pct']
+def recalculate_pcts(fuelbeds, total_burnable_pct=None):
+    if not fuelbeds:
+        return
+
+    total = reduce(lambda a,b: a + b['pct'], fuelbeds, 0)
+    nfactor = 100 / total
+    bfactor = total_burnable_pct and 100 / total_burnable_pct
+    for fb in fuelbeds:
+        fb['npct'] = nfactor * fb['pct']
+        fb['bpct'] = total_burnable_pct and bfactor * fb['pct']
 
 def prune(all_fuelbeds):
     logging.info("Pruning fuelbeds")
@@ -289,9 +293,11 @@ def prune(all_fuelbeds):
             total_num += 1
 
     logging.info("Recalculating %'s")
-    recalculate_pcts(included)
-    recalculate_pcts(truncated)
-    recalculate_pcts(excluded)
+    for i in all_fuelbeds:
+        total_burnable_pct = reduce(lambda a,b: a + b['pct'], included[i] + truncated[i], 0)
+        recalculate_pcts(included[i], total_burnable_pct)
+        recalculate_pcts(truncated[i], total_burnable_pct)
+        recalculate_pcts(excluded[i])
 
     logging.info("Done pruning fuelbeds and recalculating %'s")
     return included, truncated, excluded
