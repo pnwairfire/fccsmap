@@ -131,42 +131,45 @@
                     const totalNpct = fuelbeds.reduce((r,fb) => r+fb.npct, 0)
 
                     return `<div style="font-weight: bold;">${capitalizedKey}</div>
-                    <table class="table table-sm table-borderless">
-                      <thead>
-                        <tr>
-                          <th scope="col">FCCS Id</th>
-                          <th scope="col"># Cells</th>
-                          <th scope="col">% of Total</th>
-                          <th scope="col">% of Burnable</th>
-                          <th scope="col">% of ${capitalizedKey}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        ${rows.join('')}
-                        <tr>
-                            <th scope="row">Total</th>
-                            <td style="font-weight: bold;">${totalCount}</td>
-                            <td style="font-weight: bold;">${totalPct && totalPct.toLocaleString()}</td>
-                            <td style="font-weight: bold;">${totalBpct && totalBpct.toLocaleString() || ('n/a')}</td>
-                            <td style="font-weight: bold;">${totalNpct && totalNpct.toLocaleString()}</td>
-                        </tr>
-                      </tbody>
-                    </table>`
+                        <table class="table table-sm table-borderless">
+                          <thead>
+                            <tr>
+                              <th scope="col">FCCS Id</th>
+                              <th scope="col"># Cells</th>
+                              <th scope="col">% of Total</th>
+                              <th scope="col">% of Burnable</th>
+                              <th scope="col">% of ${capitalizedKey}</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            ${rows.join('')}
+                            <tr>
+                                <th scope="row">Total</th>
+                                <td style="font-weight: bold;">${totalCount}</td>
+                                <td style="font-weight: bold;">${totalPct && totalPct.toLocaleString()}</td>
+                                <td style="font-weight: bold;">${totalBpct && totalBpct.toLocaleString() || ('n/a')}</td>
+                                <td style="font-weight: bold;">${totalNpct && totalNpct.toLocaleString()}</td>
+                            </tr>
+                          </tbody>
+                        </table>`
                 } else {
-                    return '<div class="ms-5 my-1">(none)</div>'
+                    return `<div style="font-weight: bold;">${capitalizedKey}</div>
+                        <div class="ms-5 my-1">(none)</div>`
                 }
 
             }
 
             function getPopupContent(feature) {
-                let content = '<div>'
-                    +''
-                    + getFuelbedsTable(feature.properties, 'fuelbeds', true)
-                    + '<hr />'
-                    + getFuelbedsTable(feature.properties, 'truncated', true)
-                    + '<hr />'
-                    + getFuelbedsTable(feature.properties, 'excluded', false)
-                    + '</div>'
+                const pctBurnable = 100 - feature.properties.excluded
+                    .reduce((r,fb) => r+fb.pct, 0)
+                let content = `<div>
+                        ${getFuelbedsTable(feature.properties, 'fuelbeds', true)}
+                        <hr />
+                        ${getFuelbedsTable(feature.properties, 'truncated', true)}
+                        <hr />
+                        ${getFuelbedsTable(feature.properties, 'excluded', false)}
+                        <div style="font-style: italic;">${pctBurnable.toLocaleString()}% of the grid cell is burnable.</div>
+                    </div>`
                 return content
             }
 
