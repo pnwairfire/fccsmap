@@ -106,18 +106,52 @@
 
             let fccsLayer = null
 
-            function getFuelbedsList(fuelbeds) {
+            function capitalizeFirstLetter(string) {
+                return string.charAt(0).toUpperCase() + string.slice(1);
+            }
+
+            function getFuelbedsTable(properties, key, isBurnable) {
+                const fuelbeds = properties[key]
+                const capitalizedKey = capitalizeFirstLetter(key)
                 if (fuelbeds && fuelbeds.length > 0) {
-                    let lis = fuelbeds.map(fb => {
+                    const rows = fuelbeds.map(fb => {
                         // TODO: Look up Label for the fccsId
-                        return `<li>${fb.fccsId}: ${fb.npct.toLocaleString()}% (${fb.count})</li>`
+                        return `<tr>
+                          <th scope="row">${fb.fccsId}</th>
+                          <td>${fb.count}</td>
+                          <td>${fb.pct.toLocaleString()}</td>
+                          <td>${fb.bpct ? fb.bpct.toLocaleString() : 'n/a'}</td>
+                          <td>${fb.npct.toLocaleString()}</td>
+                        </tr>`
                     })
 
-                    let total = fuelbeds.reduce((r,fb) => r+fb.count, 0)
+                    const totalCount = fuelbeds.reduce((r,fb) => r+fb.count, 0)
+                    const totalPct = fuelbeds.reduce((r,fb) => r+fb.pct, 0)
+                    const totalBpct = isBurnable && fuelbeds.reduce((r,fb) => r+fb.bpct, 0)
+                    const totalNpct = fuelbeds.reduce((r,fb) => r+fb.npct, 0)
 
-                    return '<div class="my-2"><ul class="my-1">' + lis.join('') + '</ul>'
-                        + '<div class="ms-5 my-1">(total: '
-                        + total +')</div></div>'
+                    return `<div style="font-weight: bold;">${capitalizedKey}</div>
+                    <table class="table table-sm table-borderless">
+                      <thead>
+                        <tr>
+                          <th scope="col">FCCS Id</th>
+                          <th scope="col"># Cells</th>
+                          <th scope="col">% of Total</th>
+                          <th scope="col">% of Burnable</th>
+                          <th scope="col">% of ${capitalizedKey}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${rows.join('')}
+                        <tr>
+                            <th scope="row">Total</th>
+                            <td style="font-weight: bold;">${totalCount}</td>
+                            <td style="font-weight: bold;">${totalPct && totalPct.toLocaleString()}</td>
+                            <td style="font-weight: bold;">${totalBpct && totalBpct.toLocaleString() || ('n/a')}</td>
+                            <td style="font-weight: bold;">${totalNpct && totalNpct.toLocaleString()}</td>
+                        </tr>
+                      </tbody>
+                    </table>`
                 } else {
                     return '<div class="ms-5 my-1">(none)</div>'
                 }
@@ -125,16 +159,13 @@
             }
 
             function getPopupContent(feature) {
-                const props = feature.properties
                 let content = '<div>'
-                    +'<div style="font-weight: bold;">Fuelbeds</div>'
-                    + getFuelbedsList(props.fuelbeds)
+                    +''
+                    + getFuelbedsTable(feature.properties, 'fuelbeds', true)
                     + '<hr />'
-                    +'<div style="font-weight: bold;">Truncated</div>'
-                    + getFuelbedsList(props.truncated)
+                    + getFuelbedsTable(feature.properties, 'truncated', true)
                     + '<hr />'
-                    +'<div style="font-weight: bold;">Excluded</div>'
-                    + getFuelbedsList(props.excluded)
+                    + getFuelbedsTable(feature.properties, 'excluded', false)
                     + '</div>'
                 return content
             }
@@ -182,6 +213,7 @@
                             map.fitBounds(fccsLayer.getBounds())
 
                         } catch(e) {
+                            console.log(`Failed to load ${file} - ${e}`)
                             alert(`Failed to load ${file}`)
                         }
 
