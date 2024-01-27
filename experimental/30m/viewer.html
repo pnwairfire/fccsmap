@@ -160,14 +160,14 @@
             }
 
             function getPopupContent(feature) {
-                const pctBurnable = 100 - feature.properties.excluded
+                const pctBurnable = 100 - feature.properties.unburnable
                     .reduce((r,fb) => r+fb.pct, 0)
                 let content = `<div>
                         ${getFuelbedsTable(feature.properties, 'fuelbeds', true)}
                         <hr />
                         ${getFuelbedsTable(feature.properties, 'truncated', true)}
                         <hr />
-                        ${getFuelbedsTable(feature.properties, 'excluded', false)}
+                        ${getFuelbedsTable(feature.properties, 'unburnable', false)}
                         <hr />
                         <div style="font-style: italic;">${pctBurnable.toLocaleString()}% of the grid cell is burnable.</div>
                     </div>`

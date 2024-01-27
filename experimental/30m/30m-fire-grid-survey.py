@@ -257,50 +257,66 @@ def do_exclude(fccs_id):
     # TODO: other cases?
     return False
 
-def recalculate_pcts(fuelbeds, total_burnable_pct=None):
-    if not fuelbeds:
-        return
-
-    total = reduce(lambda a,b: a + b['pct'], fuelbeds, 0)
-    nfactor = 100 / total
-    bfactor = total_burnable_pct and 100 / total_burnable_pct
-    for fb in fuelbeds:
-        fb['npct'] = nfactor * fb['pct']
-        fb['bpct'] = total_burnable_pct and bfactor * fb['pct']
-
-def prune(all_fuelbeds):
-    logging.info("Pruning fuelbeds")
-    # Keep only the most prevalent FCCS IDs that comprise 90% of the
-    #    remaining cells.   Potentially: Truncate to 5 FCCS IDs max.
-    #    Renormalize to the truncated total.
-    included = defaultdict(lambda: [])
-    truncated = defaultdict(lambda: [])
-    excluded = defaultdict(lambda: [])
+def split_by_burnability(all_fuelbeds):
+    burnable = defaultdict(lambda: [])
+    unburnable = defaultdict(lambda: [])
     for idx in all_fuelbeds:
-        total_pct = 0
-        total_num = 0
         for fccs_id, d in sorted(all_fuelbeds[idx].items(), key=lambda e: -e[1]['pct']):
             fb = {'fccsId': fccs_id, **all_fuelbeds[idx][fccs_id]}
             if do_exclude(fccs_id):
-                excluded[idx].append(fb)
-            elif (total_pct >= TRUNCATION_PCT_THRESHOLD
+                unburnable[idx].append(fb)
+            else:
+                burnable[idx].append(fb)
+
+        # compute % of burnable
+        total_burnable_pct = reduce(lambda a,b: a + b['pct'], burnable[idx], 0)
+        p_factor = 100 / total_burnable_pct
+        for fb in burnable[idx]:
+            fb['bpct'] = p_factor * fb['pct']
+
+    return burnable, unburnable
+
+def truncate(burnable):
+    included = defaultdict(lambda: [])
+    truncated = defaultdict(lambda: [])
+    for idx in burnable:
+        total_pct = 0
+        total_num = 0
+        for fb in sorted(burnable[idx], key=lambda e: -e['bpct']):
+            if (total_pct >= TRUNCATION_PCT_THRESHOLD
                     or (TRUNCATION_NUM_THRESHOLD and total_num >= TRUNCATION_NUM_THRESHOLD)):
                 truncated[idx].append(fb)
             else:
                 included[idx].append(fb)
 
-            total_pct += fb['pct']
+            total_pct += fb['bpct']
             total_num += 1
+
+    return included, truncated
+
+def calculate_pct_in_group(fuelbeds, total_burnable_pct=None):
+    if not fuelbeds:
+        return
+
+    total = reduce(lambda a,b: a + b['pct'], fuelbeds, 0)
+    p_factor = 100 / total
+    for fb in fuelbeds:
+        fb['npct'] = p_factor * fb['pct']
+
+def prune(all_fuelbeds):
+    logging.info("Pruning fuelbeds")
+    # First, separate out unburnable
+    burnable, unburnable = split_by_burnability(all_fuelbeds)
+    included, truncated = truncate(burnable)
 
     logging.info("Recalculating %'s")
     for i in all_fuelbeds:
-        total_burnable_pct = reduce(lambda a,b: a + b['pct'], included[i] + truncated[i], 0)
-        recalculate_pcts(included[i], total_burnable_pct)
-        recalculate_pcts(truncated[i], total_burnable_pct)
-        recalculate_pcts(excluded[i])
+        calculate_pct_in_group(included[i])
+        calculate_pct_in_group(truncated[i])
+        calculate_pct_in_group(unburnable[i])
 
     logging.info("Done pruning fuelbeds and recalculating %'s")
-    return included, truncated, excluded
+    return included, truncated, unburnable
 
 OUTPUT_CRS = 'EPSG:4326'
 
@@ -321,7 +337,7 @@ if __name__ == '__main__':
 
     logging.info("Determining fuelbeds per grid cell")
     all_fuelbeds = get_all_fuelbeds_per_grid_cell(fire_grid, fccs_grid)
-    included, truncated, excluded = prune(all_fuelbeds)
+    included, truncated, unburnable = prune(all_fuelbeds)
 
     logging.info("Forming output")
     results = []
@@ -335,7 +351,7 @@ if __name__ == '__main__':
             "properties": {
                 'crs': OUTPUT_CRS,
                 'fuelbeds': included[i],
-                'excluded': excluded[i],
+                'unburnable': unburnable[i],
                 'truncated': truncated[i],
                 'latLngIndiices': fire_grid.lt_ln[i],
             },
