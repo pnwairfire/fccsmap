@@ -350,9 +350,9 @@ if __name__ == '__main__':
             "geometry": shapely.geometry.mapping(fire_grid_polygon),
             "properties": {
                 'crs': OUTPUT_CRS,
-                'fuelbeds': included[i],
-                'unburnable': unburnable[i],
+                'included': included[i],
                 'truncated': truncated[i],
+                'unburnable': unburnable[i],
                 'latLngIndiices': fire_grid.lt_ln[i],
             },
             "id": i

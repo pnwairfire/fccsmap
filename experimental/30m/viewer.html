@@ -163,7 +163,7 @@
                 const pctBurnable = 100 - feature.properties.unburnable
                     .reduce((r,fb) => r+fb.pct, 0)
                 let content = `<div>
-                        ${getFuelbedsTable(feature.properties, 'fuelbeds', true)}
+                        ${getFuelbedsTable(feature.properties, 'included', true)}
                         <hr />
                         ${getFuelbedsTable(feature.properties, 'truncated', true)}
                         <hr />
@@ -197,7 +197,7 @@
 
                             fccsLayer = L.geoJSON(data, {
                                 style: function(feature) {
-                                    // TODO: color code by feature.properties.fuelbeds
+                                    // TODO: color code by feature.properties.included
                                     return {
                                         weight: 2,
                                         color: "#fff", /* TODO: color code based on FCCS ids */
