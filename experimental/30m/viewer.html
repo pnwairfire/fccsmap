@@ -114,13 +114,17 @@
                 const fuelbeds = properties[key]
                 const capitalizedKey = capitalizeFirstLetter(key)
                 if (fuelbeds && fuelbeds.length > 0) {
+
                     const rows = fuelbeds.map(fb => {
                         // TODO: Look up Label for the fccsId
+                        const pctOfBurnableCell = isBurnable
+                            ? `<td>${fb.bpct.toLocaleString()}</td>`
+                            : ''
                         return `<tr>
                           <th scope="row">${fb.fccsId}</th>
                           <td>${fb.count}</td>
                           <td>${fb.pct.toLocaleString()}</td>
-                          <td>${fb.bpct ? fb.bpct.toLocaleString() : 'n/a'}</td>
+                          ${pctOfBurnableCell}
                           <td>${fb.npct.toLocaleString()}</td>
                         </tr>`
                     })
@@ -130,6 +134,13 @@
                     const totalBpct = isBurnable && fuelbeds.reduce((r,fb) => r+fb.bpct, 0)
                     const totalNpct = fuelbeds.reduce((r,fb) => r+fb.npct, 0)
 
+                    const pctOfBurnableHeader = isBurnable
+                        ? '<th scope="col">% of Burnable</th>'
+                        : ''
+                    const pctOfBurnableCell = isBurnable
+                        ? `<td style="font-weight: bold;">${totalBpct.toLocaleString()}</td>`
+                        : ''
+
                     return `<div style="font-weight: bold;">${capitalizedKey}</div>
                         <table class="table table-sm table-borderless">
                           <thead>
@@ -137,7 +148,7 @@
                               <th scope="col">FCCS Id</th>
                               <th scope="col"># Cells</th>
                               <th scope="col">% of Total</th>
-                              <th scope="col">% of Burnable</th>
+                              ${pctOfBurnableHeader}
                               <th scope="col">% of ${capitalizedKey}</th>
                             </tr>
                           </thead>
@@ -147,7 +158,7 @@
                                 <th scope="row">Total</th>
                                 <td style="font-weight: bold;">${totalCount}</td>
                                 <td style="font-weight: bold;">${totalPct && totalPct.toLocaleString()}</td>
-                                <td style="font-weight: bold;">${totalBpct && totalBpct.toLocaleString() || ('n/a')}</td>
+                                ${pctOfBurnableCell}
                                 <td style="font-weight: bold;">${totalNpct && totalNpct.toLocaleString()}</td>
                             </tr>
                           </tbody>
