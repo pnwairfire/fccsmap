@@ -58,6 +58,8 @@ class FccsLookUp(object):
     OTHER_DEFAULTS = {
         "ignored_fuelbeds": ('0', '900'),
         "ignored_percent_resampling_threshold": 99.9,  # instead of 100.0, to account for rounding errors
+        "insignificance_threshold": 10.0,
+        "dont_remove_insignificant": False,
         "sampling_radius_factors": [3, 5],
         "no_sampling": False,
         "use_all_grid_cells": False,
@@ -76,6 +78,10 @@ class FccsLookUp(object):
          - ignored_percent_resampling_threshold -- percentage of ignored
             fuelbeds which should trigger resampling in larger area; only
             plays a part in Point and MultiPoint look-ups
+         - insignificance_threshold -- remove least prevalent fuelbeds that
+            cumulatively add up to no more that this percentage; default: 10.0
+         - dont_remove_insignificant -- return all fuelbeds, skipping the
+            removal of insignificant ones
          - no_sampling -- don't sample surrounding area for Point
             and MultiPoint geometries
          - sampling_radius_factors -- increasing size of sampling area,
@@ -352,20 +358,21 @@ class FccsLookUp(object):
 
         return stats
 
-    INSIGNIFICANCE_THRESHOLD = 10.0
-
     def _remove_insignificant(self, stats):
         """Removes fuelbeds that make up an insignificant fraction of the
         total fuelbed composition (i.e. those that cumulatively make up
         less than INSIGNIFICANCE_THRESHOLD), and readjust percentages to that
         they add up to 100.
         """
+        if self._dont_remove_insignificant:
+            return stats
+
         sorted_fuelbeds = sorted(stats.get('fuelbeds', {}).items(),
             key=lambda e: e[1]['percent'])
         total_percentage_removed = 0.0
         for fccs_id, f_dict in sorted_fuelbeds:
             if (total_percentage_removed + f_dict['percent']
-                    < self.INSIGNIFICANCE_THRESHOLD):
+                    < self._insignificance_threshold):
                 total_percentage_removed += f_dict['percent']
                 stats['fuelbeds'].pop(fccs_id)
 
