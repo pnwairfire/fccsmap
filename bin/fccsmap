@@ -138,7 +138,8 @@ Example calls:
           "coordinates": [-120.3606708, 48.0364064]
         }}'
 
- """.format(options_str=lookup.FccsLookUp.OPTIONS_STRING,
+ """.format(options_str=lookup.FccsLookUp.OPTIONS_STRING
+    + lookup.FccsLookUp.ADDITIONAL_OPTIONS_STRING,
     script_name=sys.argv[0])
 
 def output_version(parser, args):
