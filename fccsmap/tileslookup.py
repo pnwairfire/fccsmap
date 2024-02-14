@@ -11,7 +11,7 @@ import numpy
 import rioxarray
 import shapely
 
-from . import BaseLookUp
+from . import BaseLookUp, time_me
 
 __all__ = [
     'FccsTilesLookUp'
@@ -45,10 +45,13 @@ class FccsTilesLookUp(BaseLookUp):
         super().__init__(**options)
 
 
+
+
     ##
     ## Constructor methods
     ##
 
+    @time_me(message_header="FccsTilesLookUp")
     def _set_tiles_directory(self, options):
         if not options.get('tiles_directory'):
             raise RuntimeError("Missing required config option 'tiles_directory'")
@@ -57,6 +60,7 @@ class FccsTilesLookUp(BaseLookUp):
         if not os.path.exists(self._tiles_directory):
             raise RuntimeError(f"Tiles directory does not exist - {self._tiles_directory}")
 
+    @time_me(message_header="FccsTilesLookUp")
     def _create_tiles_spatial_index(self, options):
         logging.debug("Creating tiles index")
 
@@ -84,6 +88,7 @@ class FccsTilesLookUp(BaseLookUp):
     ## Look-up helpers
     ##
 
+    @time_me(message_header="FccsTilesLookUp")
     def _look_up(self, geo_data):
         geo_data_df = self._create_geo_data_df(geo_data)
         tiles = self._find_matching_tiles(geo_data_df)
@@ -91,18 +96,21 @@ class FccsTilesLookUp(BaseLookUp):
         final_stats = self._compute_percentages(per_tile_stats)
         return final_stats
 
+    @time_me(message_header="FccsTilesLookUp")
     def _create_geo_data_df(self, geo_data):
         logging.debug("Creating data frame of geo-data")
         shape = shapely.geometry.shape(geo_data)
         wgs84_df = geopandas.GeoDataFrame({'geometry': [shape]}, crs="EPSG:4326")
         return wgs84_df.to_crs(self._crs)
 
+    @time_me(message_header="FccsTilesLookUp")
     def _find_matching_tiles(self, geo_data_df):
         logging.debug("Finding matching tiles")
         matches = self._tiles_df.sjoin(geo_data_df, rsuffix='geo_data')
         tiles = list(matches['location'])
         return tiles
 
+    @time_me(message_header="FccsTilesLookUp")
     def _look_in_tile(self, geo_data_df, tile):
         logging.debug(f"Looking in file {tile}")
         tile_file = os.path.join(self._tiles_directory, tile)

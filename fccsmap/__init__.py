@@ -1,4 +1,5 @@
 import abc
+import datetime
 import json
 import logging
 import math
@@ -7,6 +8,20 @@ from collections import defaultdict
 __version_info__ = (4,0,0)
 __version__ = '.'.join([str(n) for n in __version_info__])
 
+__all__ = [
+    "time_me", "BaseLookUp"
+]
+
+def time_me(message_header="TIME-ME"):
+    def _time_me(func):
+        def _(*args, **kwargs):
+            n = datetime.datetime.now()
+            r = func(*args,  **kwargs)
+            t = (datetime.datetime.now() - n).total_seconds()
+            logging.debug(f"{message_header}: {func.__name__} {t}s")
+            return r
+        return _
+    return _time_me
 
 
 class BaseLookUp(metaclass=abc.ABCMeta):
