@@ -95,11 +95,12 @@ class FccsLookUp(BaseLookUp):
             logging.debug(f"Setting {attr} to {val}")
             setattr(self, attr, val)
 
+        self._sampling_radius_km = self.grid_resolution
+
         self.gridfile_specifier = "NETCDF:%s:%s" % (self.filename, self.param)
         self._initialize_projector()
 
         super().__init__(**options)
-
 
     ##
     ## Helper methods

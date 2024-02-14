@@ -7,3 +7,4 @@ fccsmap.egg-info/
 .cache
 .private/
 tiles/
+tmp/

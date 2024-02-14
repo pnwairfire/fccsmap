@@ -44,9 +44,6 @@ class FccsTilesLookUp(BaseLookUp):
 
         super().__init__(**options)
 
-
-
-
     ##
     ## Constructor methods
     ##
@@ -81,8 +78,10 @@ class FccsTilesLookUp(BaseLookUp):
 
         self._tiles_df = geopandas.read_file(index_shapefile)
         #self._tiles_index = self._tiles_df.sindex
-        self._crs = self._tiles_df.crs
 
+        # TODO: set `self._sampling_radius_km` to grid resolution
+
+        self._crs = self._tiles_df.crs
 
     ##
     ## Look-up helpers

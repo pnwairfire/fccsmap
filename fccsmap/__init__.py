@@ -48,9 +48,11 @@ class BaseLookUp(metaclass=abc.ABCMeta):
          - no_sampling -- don't sample surrounding area for Point
             and MultiPoint geometries
          - sampling_radius_factors -- increasing size of sampling area,
-            expressed as a factor times the grid resolution. e.g. With 1km data,
-            [1,3,5] would mean sampling a 2km x 2km area around the point, followed
-            by a 6km x 6km area, and finally a 10km x 10km area (if necessary).
+            expressed as a factor times the sampling radius (or grid resolution,
+            for the bundled netcdf data).
+            e.g. With 1km data, [1,3,5] would mean sampling a 2km x 2km area around
+            the point, followed by a 6km x 6km area, and finally a 10km x 10km
+            area (if necessary).
          - use_all_grid_cells -- Consider FCCS map grid cells entirely within
             the area of interest as well as cells partially outside of the area.
             (The default behavior is to ignore partial cells, unless there are no
@@ -59,14 +61,14 @@ class BaseLookUp(metaclass=abc.ABCMeta):
 
     ADDITIONAL_OPTIONS_STRING = ""  # optionally defined in derived classes
 
+    DEFAULT_SAMPLING_RADIUS_KM = 0.25
+
     def __init__(self, **options):
         """Constructor
 
         Valid options:
 
         {}
-
-        TODO: determine grid_resolution from NetCDF file
         """.format(self.OPTIONS_STRING)
 
         for k in self.CONFIG_DEFAULTS:
@@ -75,6 +77,8 @@ class BaseLookUp(metaclass=abc.ABCMeta):
             logging.debug(f"Setting {attr} to {val}")
             setattr(self, attr, val)
 
+        if not hasattr(self,'_sampling_radius_km'):
+            self._sampling_radius_km = self.DEFAULT_SAMPLING_RADIUS_KM
 
     ##
     ## Public Interface
@@ -122,10 +126,10 @@ class BaseLookUp(metaclass=abc.ABCMeta):
 
         if not self._no_sampling and geo_data["type"] in ('Point', 'MultiPoint'):
             for radius_factor in self._sampling_radius_factors:
-                logging.debug(f"Sampling {radius_factor} * grid resoluation")
+                logging.debug(f"Sampling {radius_factor} * sampling radius")
 
                 new_geo_data = self._transform_points(geo_data,
-                    radius_factor * self.grid_resolution)
+                    radius_factor * self._sampling_radius_km)
                 stats = self._look_up(new_geo_data)
                 logging.debug(f"Stats from sampling {stats}")
 
