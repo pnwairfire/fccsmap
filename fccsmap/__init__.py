@@ -42,6 +42,8 @@ class BaseLookUp(metaclass=abc.ABCMeta):
             fully included cells, in which case parials are used.)
     """
 
+    ADDITIONAL_OPTIONS_STRING = ""  # optionally defined in derived classes
+
     def __init__(self, **options):
         """Constructor
 

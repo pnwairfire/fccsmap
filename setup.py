@@ -34,7 +34,11 @@ setup(
         # Note: numpy and gdal must now be installed manually beforehand
         "shapely==2.0.1",
         "pyproj==3.6.1",
-        "rasterstats==0.19.0"
+        "rasterstats==0.19.0",
+        "gdal==3.4.1",
+        "geopandas==0.14.2",
+        "matplotlib==3.5.1",
+        "rioxarray==0.15.0"
     ],
     dependency_links=[
         "https://pypi.airfire.org/simple/afscripting/",

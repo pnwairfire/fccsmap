@@ -14,12 +14,12 @@ from afscripting import args as scripting_args
 from functools import reduce
 
 try:
-    from fccsmap import lookup, __version__
+    from fccsmap import lookup, tileslookup, __version__
 except:
     import os
     root_dir = os.path.abspath(os.path.join(sys.path[0], '../'))
     sys.path.insert(0, root_dir)
-    from fccsmap import lookup, __version__
+    from fccsmap import lookup, tileslookup, __version__
 
 
 OPTIONAL_ARGS = [
@@ -63,9 +63,13 @@ USAGE = "usage: %prog [options] <id> [<id> ...]"
 
 EPILOG_STR = """
 
-Valid Options:
+Valid Options (without tiles):
 
 {options_str}
+
+Valid Options (with tiles):
+
+{tiles_options_str}
 
 Example calls:
 
@@ -138,8 +142,33 @@ Example calls:
           "coordinates": [-120.3606708, 48.0364064]
         }}'
 
+  Using tiles:
+
+    $ {script_name} --log-level=DEBUG --indent 4 \\
+        --config-option tiles_directory=./tiles/hawaii \\
+        --config-option index_shapefile=./tiles/hawaii/index.shp \\
+        -g '{{
+          "type": "Polygon",
+          "coordinates": [
+            [[-156.3, 20.7],[-156.3, 20.8],[-156.2, 20.8],[-156.2, 20.7],[-156.3, 20.7]]
+          ]
+        }}'
+
+    $ {script_name} --log-level=DEBUG --indent 4 \\
+        --config-option tiles_directory=./tiles/conus \\
+        --config-option index_shapefile=index.shp \\
+        -g '{{
+          "type": "MultiPolygon",
+          "coordinates": [
+            [[[-120.9, 48.1],[-120.9, 47.9],[-121.1, 47.9],[-121.1, 48.1]]],
+            [[[-121.3, 48.3],[-121.5, 48.3],[-121.5, 48.5],[-121.3, 48.5]]]
+          ]
+        }}'
+
  """.format(options_str=lookup.FccsLookUp.OPTIONS_STRING
     + lookup.FccsLookUp.ADDITIONAL_OPTIONS_STRING,
+    tiles_options_str=lookup.FccsLookUp.OPTIONS_STRING
+    + tileslookup.FccsTilesLookUp.ADDITIONAL_OPTIONS_STRING,
     script_name=sys.argv[0])
 
 def output_version(parser, args):
@@ -159,7 +188,11 @@ def main():
 
     try:
         options = args.config_options or {}
-        fccs_lookup = lookup.FccsLookUp(**options)
+        tiles_directory = options.get('tiles_directory')
+        if tiles_directory:
+            fccs_lookup = tileslookup.FccsTilesLookUp(**options)
+        else:
+            fccs_lookup = lookup.FccsLookUp(**options)
 
         if args.indices:
             raise NotImplementedError(
