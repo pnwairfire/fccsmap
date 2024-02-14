@@ -3,6 +3,7 @@
 
 __author__      = "Joel Dubowy"
 
+import logging
 import os
 
 import geopandas
@@ -57,6 +58,8 @@ class FccsTilesLookUp(BaseLookUp):
             raise RuntimeError(f"Tiles directory does not exist - {self._tiles_directory}")
 
     def _create_tiles_spatial_index(self, options):
+        logging.debug("Creating tiles index")
+
         # if not specified, assume index shapefile is named index.shp and
         # exists in the files directory
         index_shapefile = options.get('index_shapefile') or os.path.join(self._tiles_directory, "index.shp")
@@ -82,24 +85,26 @@ class FccsTilesLookUp(BaseLookUp):
     ##
 
     def _look_up(self, geo_data):
-        geo_data_df = self._get_geo_data_df(geo_data)
-        tiles = self._get_matching_tiles(geo_data_df)
-        per_tile_stats = [self._look_up_tile(geo_data_df, tile) for tile in tiles]
-        #stats = self._aggregate(per_tile_stats)
+        geo_data_df = self._create_geo_data_df(geo_data)
+        tiles = self._find_matching_tiles(geo_data_df)
+        per_tile_stats = [self._look_in_tile(geo_data_df, tile) for tile in tiles]
         final_stats = self._compute_percentages(per_tile_stats)
         return final_stats
 
-    def _get_geo_data_df(self, geo_data):
+    def _create_geo_data_df(self, geo_data):
+        logging.debug("Creating data frame of geo-data")
         shape = shapely.geometry.shape(geo_data)
         wgs84_df = geopandas.GeoDataFrame({'geometry': [shape]}, crs="EPSG:4326")
         return wgs84_df.to_crs(self._crs)
 
-    def _get_matching_tiles(self, geo_data_df):
+    def _find_matching_tiles(self, geo_data_df):
+        logging.debug("Finding matching tiles")
         matches = self._tiles_df.sjoin(geo_data_df, rsuffix='geo_data')
         tiles = list(matches['location'])
         return tiles
 
-    def _look_up_tile(self, geo_data_df, tile):
+    def _look_in_tile(self, geo_data_df, tile):
+        logging.debug(f"Looking in file {tile}")
         tile_file = os.path.join(self._tiles_directory, tile)
         raster = rioxarray.open_rasterio(tile_file)
         band = raster[0]
