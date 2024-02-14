@@ -212,7 +212,7 @@ def main():
         if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
             scripting_args.exit_with_msg(traceback.format_exc(), prefix="")
         else:
-            scripting_args.exit_with_msg(e.message)
+            scripting_args.exit_with_msg(e.args[0])
 
 if __name__ == "__main__":
     main()
