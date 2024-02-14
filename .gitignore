@@ -6,3 +6,4 @@ dist/
 fccsmap.egg-info/
 .cache
 .private/
+tiles/

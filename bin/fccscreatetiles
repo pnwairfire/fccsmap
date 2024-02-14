@@ -42,18 +42,31 @@ REQUIRED_ARGS = [
 
 OPTIONAL_ARGS = [
     {
+        'short': '-x',
+        'long': '--grid-cell-width',
+        'help': 'grid cell width of each tile',
+        'default': 256,
+        'type': int
+    },
+    {
+        'short': '-y',
+        'long': '--grid-cell-height',
+        'help': 'grid cell height of each tile',
+        'default': 256,
+        'type': int
+    },
+    {
         'short': '-j',
         'long': '--json-index-file-name',
-        'help': 'name of index GeoJSON file',
+        'help': 'name of index GeoJSON file (not used by fccsmap)',
         'default': 'index.json'
     },
     {
         'short': '-c',
         'long': '--csv-index-file-name',
-        'help': 'name of index csv file',
+        'help': 'name of index csv file (not used by fccsmap)',
         'default': 'index.csv'
     }
-
 ]
 
 # Note: scripting_args.parse_args adds logging and configuration related
@@ -103,10 +116,10 @@ def main():
     # Create tiles
     subprocess.run([
         "gdal_retile.py", source_file,
+        "-ps", str(args.grid_cell_width), str(args.grid_cell_height),
         "-targetDir", tiles_directory,
         "-tileIndex", INDEX_SHAPEFILE_NAME,
         "-csv", args.csv_index_file_name,
-
     ])
 
     # Convert index shape file to GeoJSON
