@@ -100,6 +100,7 @@ class FccsTilesLookUp(BaseLookUp):
                 in reversed(sorted(list(final_stats['fuelbeds'].items()),
                     key=lambda e: e[1]['percent']))
         })
+        final_stats['area'] = geo_data_df.area[0]
         return final_stats
 
     @time_me(message_header="FccsTilesLookUp")
