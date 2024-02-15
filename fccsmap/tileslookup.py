@@ -5,7 +5,7 @@ __author__      = "Joel Dubowy"
 
 import logging
 import os
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 
 import geopandas
 import numpy
@@ -92,23 +92,16 @@ class FccsTilesLookUp(BaseLookUp):
     def _look_up(self, geo_data):
         geo_data_df = self._create_geo_data_df(geo_data)
         tiles = self._find_matching_tiles(geo_data_df)
-        per_tile_stats = [self._look_in_tile(geo_data_df, tile) for tile in tiles]
-        final_stats = self._compute_percentages(per_tile_stats)
-        # Sort fuelbeds by pct, decreasing
-        final_stats['fuelbeds'] = OrderedDict({
-            k: fb for k,fb
-                in reversed(sorted(list(final_stats['fuelbeds'].items()),
-                    key=lambda e: e[1]['percent']))
-        })
-        final_stats['area'] = geo_data_df.area[0]
-        return final_stats
 
-    @time_me(message_header="FccsTilesLookUp")
-    def _create_geo_data_df(self, geo_data):
-        logging.debug("Creating data frame of geo-data")
-        shape = shapely.geometry.shape(geo_data)
-        wgs84_df = geopandas.GeoDataFrame({'geometry': [shape]}, crs="EPSG:4326")
-        return wgs84_df.to_crs(self._crs)
+        per_tile_stats = [
+            self._look_up_in_file(
+                geo_data_df,
+                os.path.join(self._tiles_directory, tile)
+            )
+            for tile in tiles
+        ]
+
+        return self._aggregate(per_tile_stats, geo_data_df)
 
     @time_me(message_header="FccsTilesLookUp")
     def _find_matching_tiles(self, geo_data_df):
@@ -118,27 +111,25 @@ class FccsTilesLookUp(BaseLookUp):
         return tiles
 
     @time_me(message_header="FccsTilesLookUp")
-    def _look_in_tile(self, geo_data_df, tile):
-        logging.debug(f"Looking in file {tile}")
-        tile_file = os.path.join(self._tiles_directory, tile)
-        raster = rioxarray.open_rasterio(tile_file)
-        band = raster[0]
-        x, y, fccs_id = band.x.values, band.y.values, band.values
-        # TODO: what do the following to steps do?
-        x, y = numpy.meshgrid(x, y)
-        x, y, fccs_id = x.flatten(), y.flatten(), fccs_id.flatten()
-        fccs_df = geopandas.GeoDataFrame({
-            'geometry': geopandas.GeoSeries.from_xy(x, y, crs=band.rio.crs),
-            'fccs_id': fccs_id,
+    def _aggregate(self, per_tile_stats, geo_data_df):
+        grid_cells = sum([s['grid_cells'] for s in per_tile_stats])
+        fuelbeds = defaultdict(lambda: {'grid_cells': 0})
+        for stats in per_tile_stats:
+            for fccs_id, fb in stats['fuelbeds'].items():
+                fuelbeds[fccs_id]['grid_cells'] += fb['grid_cells']
+
+        for fb in fuelbeds.values():
+            fb['percent'] = (fb['grid_cells'] / grid_cells) * 100.0
+
+        # Sort fuelbeds by pct, decreasing
+        fuelbeds = OrderedDict({
+            k: fb for k,fb
+                in reversed(sorted(list(fuelbeds.items()),
+                    key=lambda e: e[1]['percent']))
         })
-
-        grid_cells = fccs_df.sjoin(geo_data_df, rsuffix='geo_data')
-        fpg = grid_cells.groupby(['fccs_id']).size().to_frame('count').reset_index()
-        stats = {'counts': {}, 'total': 0}
-        for _, obj in fpg.iterrows():
-            fccs_id = str(int(obj.get('fccs_id')))
-            count = int(obj.get('count'))
-            stats['counts'][fccs_id] = count
-            stats['total'] += count
-
-        return stats
+        return {
+            'fuelbeds': fuelbeds,
+            'grid_cells': grid_cells,
+            'area': geo_data_df.area[0],
+            'units': 'm^2'
+        }

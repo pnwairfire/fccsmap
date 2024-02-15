@@ -5,6 +5,12 @@ import logging
 import math
 from collections import defaultdict
 
+import geopandas
+import numpy
+from rasterstats import zonal_stats
+import rioxarray
+import shapely
+
 __version_info__ = (4,0,0)
 __version__ = '.'.join([str(n) for n in __version_info__])
 
@@ -202,6 +208,42 @@ class BaseLookUp(metaclass=abc.ABCMeta):
         """
         pass
 
+    @time_me(message_header="FccsTilesLookUp")
+    def _create_geo_data_df(self, geo_data):
+        logging.debug("Creating data frame of geo-data")
+        shape = shapely.geometry.shape(geo_data)
+        wgs84_df = geopandas.GeoDataFrame({'geometry': [shape]}, crs="EPSG:4326")
+        return wgs84_df.to_crs(self._crs)
+
+    @time_me(message_header="BaseLookUp")
+    def _look_up_in_file(self, geo_data_df, file):
+        """Determines the fuelbeds represented within geo_data_df and computes
+        the percentage of each.  It does this by finding the grid cells whose
+        centers are within geo_data_df and counts each with equal weight.
+        """
+        def counts(x):
+            # We'll ignore the mask (i.e. consider partial cells) if
+            # configured to do so or if the mask is all true values
+            # (i.e. all cells are partial)
+            ignore_mask = self._use_all_grid_cells or not any([
+                not val for subarray in x.mask  for val in subarray
+            ])
+            counts = defaultdict(lambda: 0)
+            for i in range(len(x.data)):
+                for j in range(len(x.data[i])):
+                    if (ignore_mask or not x.mask[i][j]) and x.data[i][j] >= 0:
+                        counts[x.data[i][j]] += 1
+            return dict(counts)
+
+        stats = zonal_stats(geo_data_df, file,
+            add_stats={'counts':counts})
+        # TODO: make sure area units are correct and properly translated
+        # to real geographical area; read them from nc file
+        # TODO: read and include grid cell size from nc file
+        final_stats = self._compute_percentages(stats)
+        final_stats.update(area=geo_data_df.area[0], units='m^2')
+        return final_stats
+
     def _has_high_percent_of_ignored(self, stats):
         return (self._compute_total_percent_ignored(stats) >=
             self._ignored_percent_resampling_threshold)
@@ -213,6 +255,45 @@ class BaseLookUp(metaclass=abc.ABCMeta):
         ])
 
     def _compute_percentages(self, stats):
+        """Inputs and array of stats like the following:
+            [
+                {
+                    'count': 200,
+                    'counts': {
+                        0: 100,
+                        72: 60,
+                        346: 40
+                    },
+                    'max': 346.0, /* not used */
+                    'mean': 106.0, /* not used */
+                    'min': 0.0 /* not used */
+                },
+                {
+                    'count': 100,
+                    'counts': {
+                        0: 70,
+                        52: 30
+                    },
+                    'max': 52.0, /* not used */
+                    'mean': 26, /* not used */
+                    'min': 0.0 /* not used */
+                }
+            ]
+
+        and poduces
+
+            {
+
+                'fuelbeds': {
+                    '0': {'grid_cells': 170, 'percent': 56.6666667},
+                    '72': {'grid_cells': 60, 'percent': 20.0},
+                    '346': {'grid_cells': 40, 'percent': 13.333333},
+                    '52': {'grid_cells': 30, 'percent': 10.0},
+                },
+                'grid_cells': 300
+            }
+
+        """
         total_counts = defaultdict(lambda: 0)
         for stat_set in stats:
             for fccs_id, count in list(stat_set.get('counts', {}).items()):
