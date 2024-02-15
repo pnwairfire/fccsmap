@@ -5,6 +5,7 @@ __author__      = "Joel Dubowy"
 
 import logging
 import os
+from collections import OrderedDict
 
 import geopandas
 import numpy
@@ -93,6 +94,12 @@ class FccsTilesLookUp(BaseLookUp):
         tiles = self._find_matching_tiles(geo_data_df)
         per_tile_stats = [self._look_in_tile(geo_data_df, tile) for tile in tiles]
         final_stats = self._compute_percentages(per_tile_stats)
+        # Sort fuelbeds by pct, decreasing
+        final_stats['fuelbeds'] = OrderedDict({
+            k: fb for k,fb
+                in reversed(sorted(list(final_stats['fuelbeds'].items()),
+                    key=lambda e: e[1]['percent']))
+        })
         return final_stats
 
     @time_me(message_header="FccsTilesLookUp")
