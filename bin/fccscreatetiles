@@ -12,7 +12,6 @@ import pathlib
 import shutil
 import subprocess
 import sys
-
 import traceback
 
 from afscripting import args as scripting_args
@@ -128,9 +127,6 @@ def main():
     subprocess.run([
         "ogr2ogr", "-f", "GeoJSON", index_json_file, index_shapefile
     ])
-
-    # TODO: create RTree spatial index and dump to file?
-    # TODO: create projection info file?
 
 if __name__ == "__main__":
     main()
