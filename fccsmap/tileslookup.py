@@ -45,7 +45,6 @@ class FccsTilesLookUp(BaseLookUp):
     ## Constructor methods
     ##
 
-    @time_me(message_header="FccsTilesLookUp")
     def _set_tiles_directory(self, options):
         if not options.get('tiles_directory'):
             raise RuntimeError("Missing required config option 'tiles_directory'")
@@ -54,7 +53,7 @@ class FccsTilesLookUp(BaseLookUp):
         if not os.path.exists(self._tiles_directory):
             raise RuntimeError(f"Tiles directory does not exist - {self._tiles_directory}")
 
-    @time_me(message_header="FccsTilesLookUp")
+    @time_me()
     def _create_tiles_spatial_index(self, options):
         logging.debug("Creating tiles index")
 
@@ -84,7 +83,7 @@ class FccsTilesLookUp(BaseLookUp):
     ## Look-up helpers
     ##
 
-    @time_me(message_header="FccsTilesLookUp")
+    @time_me()
     def _look_up(self, geo_data):
         geo_data_df = self._create_geo_data_df(geo_data)
         tiles = self._find_matching_tiles(geo_data_df)
@@ -99,14 +98,14 @@ class FccsTilesLookUp(BaseLookUp):
 
         return self._aggregate(per_tile_stats, geo_data_df)
 
-    @time_me(message_header="FccsTilesLookUp")
+    @time_me()
     def _find_matching_tiles(self, geo_data_df):
         logging.debug("Finding matching tiles")
         matches = self._tiles_df.sjoin(geo_data_df, rsuffix='geo_data')
         tiles = list(matches['location'])
         return tiles
 
-    @time_me(message_header="FccsTilesLookUp")
+    @time_me()
     def _aggregate(self, per_tile_stats, geo_data_df):
         grid_cells = sum([s['grid_cells'] for s in per_tile_stats])
         fuelbeds = defaultdict(lambda: {'grid_cells': 0})

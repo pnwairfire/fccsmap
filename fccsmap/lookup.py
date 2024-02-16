@@ -26,7 +26,7 @@ from pyproj import Proj
 from rasterstats import zonal_stats
 from shapely import ops, geometry
 
-from . import BaseLookUp
+from . import BaseLookUp, time_me
 
 __all__ = [
     'FccsLookUp'
@@ -91,6 +91,7 @@ class FccsLookUp(BaseLookUp):
     ## Helper methods
     ##
 
+    @time_me()
     def _look_up(self, geo_data):
         # set crs
         raster = rioxarray.open_rasterio(self._filename)

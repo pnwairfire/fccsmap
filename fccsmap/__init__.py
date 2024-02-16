@@ -216,14 +216,14 @@ class BaseLookUp(metaclass=abc.ABCMeta):
         """
         pass
 
-    @time_me(message_header="FccsTilesLookUp")
+    @time_me()
     def _create_geo_data_df(self, geo_data):
         logging.debug("Creating data frame of geo-data")
         shape = shapely.geometry.shape(geo_data)
         wgs84_df = geopandas.GeoDataFrame({'geometry': [shape]}, crs="EPSG:4326")
         return wgs84_df.to_crs(self._crs)
 
-    @time_me(message_header="BaseLookUp")
+    @time_me()
     def _look_up_in_file(self, geo_data_df, file):
         """Determines the fuelbeds represented within geo_data_df and computes
         the percentage of each.  It does this by finding the grid cells whose
