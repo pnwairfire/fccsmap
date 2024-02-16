@@ -22,8 +22,6 @@ from collections import defaultdict
 import geopandas
 import rioxarray
 from osgeo import gdal
-from pyproj import Proj
-from rasterstats import zonal_stats
 from shapely import ops, geometry
 
 from .baselookup import BaseLookUp, time_me
