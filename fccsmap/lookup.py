@@ -59,7 +59,7 @@ class FccsLookUp(BaseLookUp):
          - is_alaska -- Whether or not location is in Alaska; boolean
          - is_canada -- Whether or not location is in Canada; boolean
          - fccs_version -- '1' or '2'
-         - fccs_fuelload_file -- NetCDF file containing FCCS lookup map
+         - fccs_fuelload_file -- raster file containing FCCS lookup map
          - sampling_radius_km -- length of grid cells in km
     """
 

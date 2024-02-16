@@ -3,7 +3,7 @@ import datetime
 import json
 import logging
 import math
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 
 import geopandas
 import numpy
@@ -151,6 +151,14 @@ class BaseLookUp(metaclass=abc.ABCMeta):
 
         stats = self._remove_ignored(stats)
         stats = self._remove_insignificant(stats)
+
+        # Sort fuelbeds by pct, decreasing
+        stats['fuelbeds'] = OrderedDict({
+            k: fb for k,fb
+                in reversed(sorted(list(stats['fuelbeds'].items()),
+                    key=lambda e: e[1]['percent']))
+        })
+
 
         return stats
 

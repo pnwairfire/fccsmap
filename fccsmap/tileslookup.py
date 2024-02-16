@@ -5,7 +5,7 @@ __author__      = "Joel Dubowy"
 
 import logging
 import os
-from collections import OrderedDict, defaultdict
+from collections import defaultdict
 
 import geopandas
 import numpy
@@ -121,12 +121,6 @@ class FccsTilesLookUp(BaseLookUp):
         for fb in fuelbeds.values():
             fb['percent'] = (fb['grid_cells'] / grid_cells) * 100.0
 
-        # Sort fuelbeds by pct, decreasing
-        fuelbeds = OrderedDict({
-            k: fb for k,fb
-                in reversed(sorted(list(fuelbeds.items()),
-                    key=lambda e: e[1]['percent']))
-        })
         return {
             'fuelbeds': fuelbeds,
             'grid_cells': grid_cells,
