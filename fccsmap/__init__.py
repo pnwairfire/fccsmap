@@ -11,7 +11,7 @@ from rasterstats import zonal_stats
 import rioxarray
 import shapely
 
-__version_info__ = (4,0,0)
+__version_info__ = (4,1,0)
 __version__ = '.'.join([str(n) for n in __version_info__])
 
 __all__ = [
