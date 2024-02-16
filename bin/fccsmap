@@ -155,6 +155,18 @@ Example calls:
                 ]
               }}'
 
+
+    Using alternate fuelbed file via http (not well tested)
+
+          $ {script_name} --log-level=DEBUG --indent 4 \\
+              --config-option fccs_fuelload_file=http://localhost:8000/fuelbeds/conus.tif \\
+              -g '{{
+                "type": "Polygon",
+                "coordinates": [
+                  [[-156.3, 20.7],[-156.3, 20.8],[-156.2, 20.8],[-156.2, 20.7],[-156.3, 20.7]]
+                ]
+              }}'
+
     Using tiles:
 
           $ {script_name} --log-level=DEBUG --indent 4 \\
@@ -168,7 +180,7 @@ Example calls:
               }}'
 
           $ {script_name} --log-level=DEBUG --indent 4 \\
-              --config-option tiles_directory=./tiles/conus \\
+              --config-option tiles_directory=./tiles/conus-1024x1024 \\
               -g '{{
                 "type": "MultiPolygon",
                 "coordinates": [
