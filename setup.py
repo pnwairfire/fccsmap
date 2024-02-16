@@ -14,7 +14,8 @@ setup(
     author_email='jdubowy@gmail.com',
     packages=find_packages(),
     scripts=[
-        'bin/fccsmap'
+        'bin/fccsmap',
+        'bin/fccscreatetiles'
     ],
     package_data={
         'fccsmap': ['data/*.nc']
