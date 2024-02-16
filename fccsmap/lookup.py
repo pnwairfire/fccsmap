@@ -35,33 +35,27 @@ __all__ = [
 class FccsLookUp(BaseLookUp):
 
     FUEL_LOAD_NCS = {
-        'fccs1': {
-            'file': os.path.dirname(__file__) + '/data/fccs_fuelload.nc',
-            'sampling_radius_km': 1
-        },
-        'fccs2': {
-            'file': os.path.dirname(__file__) + '/data/fccs2_fuelload.nc',
-            'sampling_radius_km': 1
-        },
-        'ak': {
-            'file': os.path.dirname(__file__) + '/data/FCCS_Alaska.nc',
-            'sampling_radius_km': 1
-        },
-        'ca': {
-            'file': os.path.dirname(__file__) + '/data/fccs_canada.nc',
-            'sampling_radius_km': 1
-        }
+        'fccs1': os.path.dirname(__file__) + '/data/fccs_fuelload.nc',
+        'fccs2': os.path.dirname(__file__) + '/data/fccs2_fuelload.nc',
+        'ak': os.path.dirname(__file__) + '/data/FCCS_Alaska.nc',
+        'ca': os.path.dirname(__file__) + '/data/fccs_canada.nc',
     }
 
     # OPTIONS_DOC_STRING used by Constructor docstring as well as
     # script helpstring
     ADDITIONAL_OPTIONS_STRING = """
+         - fccs_fuelload_file -- raster file containing FCCS lookup map
+         - sampling_radius_km -- length of grid cells in km
+
+        The following three only come into play if fccs_fuelload_file isn't
+        specified, as the determine which bundled fuelbed file to use.
+
          - is_alaska -- Whether or not location is in Alaska; boolean
          - is_canada -- Whether or not location is in Canada; boolean
          - fccs_version -- '1' or '2'
-         - fccs_fuelload_file -- raster file containing FCCS lookup map
-         - sampling_radius_km -- length of grid cells in km
     """
+
+    DEFAULT_SAMPLING_RADIUS_KM = 1.0
 
     def __init__(self, **options):
         """Constructor
@@ -77,22 +71,19 @@ class FccsLookUp(BaseLookUp):
         #   specified and raise errors when appropriate (including invalid
         #   nonexisting versions)
 
-        if options.get('is_alaska', False):
-            fuel_load_key = 'ak'
-        elif options.get('is_canada', False):
-            fuel_load_key = 'ca'
-        else:
-            fuel_load_key = f"fccs{options.get('fccs_version') or '2'}"
-        logging.debug('fuel load key: %s', fuel_load_key)
+        self._filename = options.get('fccs_fuelload_file')
+        if not self._filename:
+            if options.get('is_alaska', False):
+                fuel_load_key = 'ak'
+            elif options.get('is_canada', False):
+                fuel_load_key = 'ca'
+            else:
+                fuel_load_key = f"fccs{options.get('fccs_version') or '2'}"
+            logging.debug('fuel load key: %s', fuel_load_key)
 
-        # TODO: support loading tif (or other?) file formats
+            self._filename = self.FUEL_LOAD_NCS[fuel_load_key]
 
-        for k in ('file', 'sampling_radius_km'):
-            attr = '_filename' if k=='file' else f"_{k}"
-            val = (options.get('fccs_fuelload_{}'.format(k))
-                or self.FUEL_LOAD_NCS[fuel_load_key][k])
-            logging.debug(f"Setting {attr} to {val}")
-            setattr(self, attr, val)
+        self._sampling_readius_km = options.get('sampling_radius_km') or self.DEFAULT_SAMPLING_RADIUS_KM
 
         super().__init__(**options)
 

@@ -23,12 +23,8 @@ class FccsTilesLookUp(BaseLookUp):
     # OPTIONS_DOC_STRING used by Constructor docstring as well as
     # script helpstring
     OPTIONS_STRING = """
-         - is_alaska -- Whether or not location is in Alaska; boolean
-         - is_canada -- Whether or not location is in Canada; boolean
-         - is_hawaii -- Whether or not location is in Hawaii; boolean
-         - tiles_directory --
+         - tiles_directory -- directory containing tiles
          - index_shapefile -- default: index.shp
-         [- projection info file???]
     """
 
     def __init__(self, **options):
