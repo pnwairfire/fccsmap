@@ -78,8 +78,10 @@ EPILOG_STR = """
 
 Example calls:
 
-    $ {script_name} -s ./LF2022_FCCS_220_HI/Tif/LH22_FCCS_220.tif \\
-        -t ./LF2022_FCCS_220_HI-tiles
+    $ {script_name} -s fuelbeds/hawaii.tif -t ./tiles/hawaii-256x256
+
+    $ {script_name} -s .fuelbeds/alaska.tif \\
+         -t ./tiles/alaska-1024x1024 -x 1024 -y 1024
 
  """.format(script_name=sys.argv[0])
 

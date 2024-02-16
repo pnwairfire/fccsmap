@@ -73,97 +73,109 @@ Valid Options (with tiles):
 
 Example calls:
 
-  Single point near Snoqualmie pass
+    Using FCCS data bundled in package
 
-    $ {script_name} --log-level=DEBUG --indent 4 -g '{{
-          "type": "Point",
-          "coordinates": [-121.4522115, 47.4316976]
-        }}'
+        Single point near Snoqualmie pass
 
-  Single point in Lake Chelan
+          $ {script_name} --log-level=DEBUG --indent 4 -g '{{
+                "type": "Point",
+                "coordinates": [-121.4522115, 47.4316976]
+              }}'
 
-    $ {script_name} --log-level=DEBUG --indent 4 -g '{{
-          "type": "Point",
-          "coordinates": [-120.3606708, 48.0364064]
-        }}'
+        Single point in Lake Chelan
 
-  MultiPoint example
+          $ {script_name} --log-level=DEBUG --indent 4 -g '{{
+                "type": "Point",
+                "coordinates": [-120.3606708, 48.0364064]
+              }}'
 
-    $ {script_name} --log-level=DEBUG --indent 4 -g '{{
-          "type": "MultiPoint",
-          "coordinates": [
-            [-121.4522115, 47.4316976],
-            [-120.0, 48.0]
-          ]
-        }}'
+        MultiPoint example
 
-  Area around Snoqualmie pass
+          $ {script_name} --log-level=DEBUG --indent 4 -g '{{
+                "type": "MultiPoint",
+                "coordinates": [
+                  [-121.4522115, 47.4316976],
+                  [-120.0, 48.0]
+                ]
+              }}'
 
-    $ {script_name} --log-level=DEBUG --indent 4 -g '{{
-          "type": "Polygon",
-          "coordinates": [
-            [
-              [-121.4522115, 47.4316976],
-              [-121.3990506, 47.4316976],
-              [-121.3990506, 47.4099293],
-              [-121.4522115, 47.4099293],
-              [-121.4522115, 47.4316976]
-            ]
-          ]
-        }}'
+        Area around Snoqualmie pass
 
-  WA state
+          $ {script_name} --log-level=DEBUG --indent 4 -g '{{
+                "type": "Polygon",
+                "coordinates": [
+                  [
+                    [-121.4522115, 47.4316976],
+                    [-121.3990506, 47.4316976],
+                    [-121.3990506, 47.4099293],
+                    [-121.4522115, 47.4099293],
+                    [-121.4522115, 47.4316976]
+                  ]
+                ]
+              }}'
 
-    $ {script_name} --log-level=DEBUG --indent 4 -g '{{
-          "type": "Polygon",
-          "coordinates": [
-            [[-125.0, 49.0],[-117.0, 49.0],[-117.0, 45.0],[-125.0, 45.0],[-125.0, 49.0]
-            ]
-          ]
-        }}'
+        WA state
 
-  MultiPolygon example
+          $ {script_name} --log-level=DEBUG --indent 4 -g '{{
+                "type": "Polygon",
+                "coordinates": [
+                  [[-125.0, 49.0],[-117.0, 49.0],[-117.0, 45.0],[-125.0, 45.0],[-125.0, 49.0]
+                  ]
+                ]
+              }}'
 
-    $ {script_name} --log-level=DEBUG --indent 4 -g '{{
-          "type": "MultiPolygon",
-          "coordinates": [
-            [[[-120.9, 48.1],[-120.9, 47.9],[-121.1, 47.9],[-121.1, 48.1]]],
-            [[[-121.3, 48.3],[-121.5, 48.3],[-121.5, 48.5],[-121.3, 48.5]]]
-          ]
-        }}'
+        MultiPolygon example
 
-  Single point with options (should return empty fuelbeds dict)
+          $ {script_name} --log-level=DEBUG --indent 4 -g '{{
+                "type": "MultiPolygon",
+                "coordinates": [
+                  [[[-120.9, 48.1],[-120.9, 47.9],[-121.1, 47.9],[-121.1, 48.1]]],
+                  [[[-121.3, 48.3],[-121.5, 48.3],[-121.5, 48.5],[-121.3, 48.5]]]
+                ]
+              }}'
 
-    $ {script_name} --log-level=DEBUG --indent 4  \\
-        --json-config-option ignored_fuelbeds='["900"]' \\
-        --boolean-config-option no_sampling=True \\
-        -g '{{
-          "type": "Point",
-          "coordinates": [-120.3606708, 48.0364064]
-        }}'
+        Single point with options (should return empty fuelbeds dict)
 
-  Using tiles:
+          $ {script_name} --log-level=DEBUG --indent 4  \\
+              --json-config-option ignored_fuelbeds='["900"]' \\
+              --boolean-config-option no_sampling=True \\
+              -g '{{
+                "type": "Point",
+                "coordinates": [-120.3606708, 48.0364064]
+              }}'
 
-    $ {script_name} --log-level=DEBUG --indent 4 \\
-        --config-option tiles_directory=./tiles/hawaii \\
-        --config-option index_shapefile=./tiles/hawaii/index.shp \\
-        -g '{{
-          "type": "Polygon",
-          "coordinates": [
-            [[-156.3, 20.7],[-156.3, 20.8],[-156.2, 20.8],[-156.2, 20.7],[-156.3, 20.7]]
-          ]
-        }}'
+    Using alternate fuelbed file
 
-    $ {script_name} --log-level=DEBUG --indent 4 \\
-        --config-option tiles_directory=./tiles/conus \\
-        --config-option index_shapefile=index.shp \\
-        -g '{{
-          "type": "MultiPolygon",
-          "coordinates": [
-            [[[-120.9, 48.1],[-120.9, 47.9],[-121.1, 47.9],[-121.1, 48.1]]],
-            [[[-121.3, 48.3],[-121.5, 48.3],[-121.5, 48.5],[-121.3, 48.5]]]
-          ]
-        }}'
+          $ {script_name} --log-level=DEBUG --indent 4 \\
+              --config-option fccs_fuelload_file=./fuelbeds/conus.tif \\
+              -g '{{
+                "type": "Polygon",
+                "coordinates": [
+                  [[-156.3, 20.7],[-156.3, 20.8],[-156.2, 20.8],[-156.2, 20.7],[-156.3, 20.7]]
+                ]
+              }}'
+
+    Using tiles:
+
+          $ {script_name} --log-level=DEBUG --indent 4 \\
+              --config-option tiles_directory=./tiles/hawaii \\
+              --config-option index_shapefile=./tiles/hawaii/index.shp \\
+              -g '{{
+                "type": "Polygon",
+                "coordinates": [
+                  [[-156.3, 20.7],[-156.3, 20.8],[-156.2, 20.8],[-156.2, 20.7],[-156.3, 20.7]]
+                ]
+              }}'
+
+          $ {script_name} --log-level=DEBUG --indent 4 \\
+              --config-option tiles_directory=./tiles/conus \\
+              -g '{{
+                "type": "MultiPolygon",
+                "coordinates": [
+                  [[[-120.9, 48.1],[-120.9, 47.9],[-121.1, 47.9],[-121.1, 48.1]]],
+                  [[[-121.3, 48.3],[-121.5, 48.3],[-121.5, 48.5],[-121.3, 48.5]]]
+                ]
+              }}'
 
  """.format(options_str=lookup.FccsLookUp.OPTIONS_STRING
     + lookup.FccsLookUp.ADDITIONAL_OPTIONS_STRING,

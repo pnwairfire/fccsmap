@@ -193,6 +193,14 @@ TODO: fill this in
 #### fccsmap
 
 ```fccsmap``` returns fuelbed information by geographical location or region.
-To see it's options and examples, use the '-h' option:
+To see it's options and examples, use the `-h` option:
 
     $ fccsmap -h
+
+
+#### fccscreatetiles
+
+```fccscreatetiles``` generates tiled raster data.  To see is't options and
+examples, use the `-h` option:
+
+    $ fccscreatetiles -h
