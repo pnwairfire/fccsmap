@@ -12,7 +12,7 @@ import numpy
 import rioxarray
 import shapely
 
-from . import BaseLookUp, time_me
+from .baselookup import BaseLookUp, time_me
 
 __all__ = [
     'FccsTilesLookUp'

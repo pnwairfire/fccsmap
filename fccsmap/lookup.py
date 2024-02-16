@@ -26,7 +26,7 @@ from pyproj import Proj
 from rasterstats import zonal_stats
 from shapely import ops, geometry
 
-from . import BaseLookUp, time_me
+from .baselookup import BaseLookUp, time_me
 
 __all__ = [
     'FccsLookUp'
