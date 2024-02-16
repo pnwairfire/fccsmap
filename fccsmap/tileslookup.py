@@ -49,9 +49,11 @@ class FccsTilesLookUp(BaseLookUp):
         if not options.get('tiles_directory'):
             raise RuntimeError("Missing required config option 'tiles_directory'")
 
-        self._tiles_directory = os.path.abspath(options['tiles_directory'])
-        if not os.path.exists(self._tiles_directory):
-            raise RuntimeError(f"Tiles directory does not exist - {self._tiles_directory}")
+        self._tiles_directory = options['tiles_directory']
+        if not self._tiles_directory.startswith('http'):
+            self._tiles_directory = os.path.abspath(self._tiles_directory)
+            if not os.path.exists(self._tiles_directory):
+                raise RuntimeError(f"Tiles directory does not exist - {self._tiles_directory}")
 
     @time_me()
     def _create_tiles_spatial_index(self, options):
@@ -67,10 +69,11 @@ class FccsTilesLookUp(BaseLookUp):
                 and not os.path.exists(os.path.abspath(index_shapefile))):
             index_shapefile = os.path.join(self._tiles_directory, index_shapefile)
 
-        index_shapefile = os.path.abspath(index_shapefile)
+        if not index_shapefile.startswith('http'):
+            index_shapefile = os.path.abspath(index_shapefile)
 
-        if not os.path.exists(index_shapefile):
-            raise RuntimeError(f"Tiles index shapefile does not exist - {index_shapefile}")
+            if not os.path.exists(index_shapefile):
+                raise RuntimeError(f"Tiles index shapefile does not exist - {index_shapefile}")
 
         self._tiles_df = geopandas.read_file(index_shapefile)
         #self._tiles_index = self._tiles_df.sindex

@@ -224,7 +224,7 @@ class BaseLookUp(metaclass=abc.ABCMeta):
         return wgs84_df.to_crs(self._crs)
 
     @time_me()
-    def _look_up_in_file(self, geo_data_df, file):
+    def _look_up_in_file(self, geo_data_df, filename):
         """Determines the fuelbeds represented within geo_data_df and computes
         the percentage of each.  It does this by finding the grid cells whose
         centers are within geo_data_df and counts each with equal weight.
@@ -243,7 +243,7 @@ class BaseLookUp(metaclass=abc.ABCMeta):
                         counts[x.data[i][j]] += 1
             return dict(counts)
 
-        stats = zonal_stats(geo_data_df, file,
+        stats = zonal_stats(geo_data_df, filename,
             add_stats={'counts':counts})
         # TODO: make sure area units are correct and properly translated
         # to real geographical area; read them from nc file
