@@ -594,7 +594,7 @@ class TestFccsLookupRemoveInsignificant(object):
             "sampled_grid_cells": 1,
             "units": "m^2"
         }
-        assert self._lookup._remove_insignificant(stats) == expected
+        assert self._lookup._truncate(stats) == expected
 
     def test_none_removed(self):
         stats = {
@@ -615,7 +615,7 @@ class TestFccsLookupRemoveInsignificant(object):
             "sampled_grid_cells": 1,
             "units": "m^2"
         }
-        assert self._lookup._remove_insignificant(stats) == expected
+        assert self._lookup._truncate(stats) == expected
 
     def test_two_removed(self):
         stats = {
@@ -638,7 +638,7 @@ class TestFccsLookupRemoveInsignificant(object):
             "sampled_grid_cells": 1,
             "units": "m^2"
         }
-        assert self._lookup._remove_insignificant(stats) == expected
+        assert self._lookup._truncate(stats) == expected
 
 
 class TestFccsLookupReadjustPercentages(object):

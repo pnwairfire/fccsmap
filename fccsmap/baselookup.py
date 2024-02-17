@@ -32,8 +32,8 @@ class BaseLookUp(metaclass=abc.ABCMeta):
     CONFIG_DEFAULTS = {
         "ignored_fuelbeds": ('0', '900'),
         "ignored_percent_resampling_threshold": 99.9,  # instead of 100.0, to account for rounding errors
-        "dont_remove_insignificant": False,
         "insignificance_threshold": 10.0, # set to 0 to not remove
+        "max_fuelbed_count_threshold": None,
         "no_sampling": False,
         "sampling_radius_km": 1.0,
         "sampling_radius_factors": [3, 5],
@@ -47,8 +47,7 @@ class BaseLookUp(metaclass=abc.ABCMeta):
             plays a part in Point and MultiPoint look-ups
          - insignificance_threshold -- remove least prevalent fuelbeds that
             cumulatively add up to no more that this percentage; default: 10.0
-         - dont_remove_insignificant -- return all fuelbeds, skipping the
-            removal of insignificant ones
+         - max_fuelbed_count_threshold -- maximum number of fuelbeds to return
          - no_sampling -- don't sample surrounding area for Point
             and MultiPoint geometries
          - sampling_radius_km -- distance, in km, from points to start sampling
@@ -147,7 +146,7 @@ class BaseLookUp(metaclass=abc.ABCMeta):
             stats = self._look_up(geo_data)
 
         stats = self._remove_ignored(stats)
-        stats = self._remove_insignificant(stats)
+        stats = self._truncate(stats)
 
         # Sort fuelbeds by pct, decreasing
         stats['fuelbeds'] = OrderedDict({
@@ -329,21 +328,36 @@ class BaseLookUp(metaclass=abc.ABCMeta):
 
         return stats
 
-    def _remove_insignificant(self, stats):
+    def _truncate(self, stats):
         """Removes fuelbeds that make up an insignificant fraction of the
         total fuelbed composition (i.e. those that cumulatively make up
-        less than INSIGNIFICANCE_THRESHOLD), and readjust percentages to that
-        they add up to 100.
+        less than insignificance_threshold), then remove the least prevalent
+        of the remaining fuelbeds that are over the max_fuelbed_count_threshold,
+        and then readjusts percentages so that they add up to 100.
         """
-        if self._dont_remove_insignificant:
+        if ((not self._insignificance_threshold
+                    or self._insignificance_threshold <= 0)
+                and (not self._max_fuelbed_count_threshold
+                    or self._max_fuelbed_count_threshold <= 0)):
+            # Configured not to truncate
             return stats
+
+        def _insignificant(total_percent_so_far):
+            if (self._insignificance_threshold
+                    and self._insignificance_threshold > 0):
+                return total_percent_so_far < self._insignificance_threshold
+
+        def _too_many(fuelbeds):
+            if (self._max_fuelbed_count_threshold
+                    and self._max_fuelbed_count_threshold > 0):
+                return len(fuelbeds) > self._max_fuelbed_count_threshold
 
         sorted_fuelbeds = sorted(stats.get('fuelbeds', {}).items(),
             key=lambda e: e[1]['percent'])
         total_percentage_removed = 0.0
         for fccs_id, f_dict in sorted_fuelbeds:
-            if (total_percentage_removed + f_dict['percent']
-                    < self._insignificance_threshold):
+            if (_insignificant(total_percentage_removed + f_dict['percent'])
+                    or _too_many(stats['fuelbeds']) ):
                 total_percentage_removed += f_dict['percent']
                 stats['fuelbeds'].pop(fccs_id)
 
