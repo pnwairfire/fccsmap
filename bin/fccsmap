@@ -231,6 +231,7 @@ def main():
             data = fccs_lookup.look_up(json.loads(input_data))
 
         sys.stdout.write(json.dumps(data, indent=args.indent))
+        sys.stdout.write('\n')
 
     except Exception as e:
         if logging.getLogger().getEffectiveLevel() <= logging.DEBUG:
