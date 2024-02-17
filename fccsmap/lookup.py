@@ -43,17 +43,14 @@ class FccsLookUp(BaseLookUp):
     # script helpstring
     ADDITIONAL_OPTIONS_STRING = """
          - fccs_fuelload_file -- raster file containing FCCS lookup map
-         - sampling_radius_km -- length of grid cells in km
 
         The following three only come into play if fccs_fuelload_file isn't
-        specified, as the determine which bundled fuelbed file to use.
+        specified, as they determine which bundled fuelbed file to use.
 
          - is_alaska -- Whether or not location is in Alaska; boolean
          - is_canada -- Whether or not location is in Canada; boolean
          - fccs_version -- '1' or '2'
     """
-
-    DEFAULT_SAMPLING_RADIUS_KM = 1.0
 
     def __init__(self, **options):
         """Constructor
@@ -65,7 +62,7 @@ class FccsLookUp(BaseLookUp):
         TODO: determine grid resolution from NetCDF file and set sampling radius to it
         """.format(self.OPTIONS_STRING + self.ADDITIONAL_OPTIONS_STRING)
 
-        # TODO: determine which combinations of file/param/version can be
+        # TODO: determine which combinations of file/version can be
         #   specified and raise errors when appropriate (including invalid
         #   nonexisting versions)
 
@@ -80,8 +77,6 @@ class FccsLookUp(BaseLookUp):
             logging.debug('fuel load key: %s', fuel_load_key)
 
             self._filename = self.FUEL_LOAD_NCS[fuel_load_key]
-
-        self._sampling_readius_km = options.get('sampling_radius_km') or self.DEFAULT_SAMPLING_RADIUS_KM
 
         super().__init__(**options)
 

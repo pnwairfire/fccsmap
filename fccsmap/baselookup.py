@@ -32,10 +32,11 @@ class BaseLookUp(metaclass=abc.ABCMeta):
     CONFIG_DEFAULTS = {
         "ignored_fuelbeds": ('0', '900'),
         "ignored_percent_resampling_threshold": 99.9,  # instead of 100.0, to account for rounding errors
-        "insignificance_threshold": 10.0,
         "dont_remove_insignificant": False,
-        "sampling_radius_factors": [3, 5],
+        "insignificance_threshold": 10.0, # set to 0 to not remove
         "no_sampling": False,
+        "sampling_radius_km": 1.0,
+        "sampling_radius_factors": [3, 5],
         "use_all_grid_cells": False,
     }
 
@@ -50,6 +51,7 @@ class BaseLookUp(metaclass=abc.ABCMeta):
             removal of insignificant ones
          - no_sampling -- don't sample surrounding area for Point
             and MultiPoint geometries
+         - sampling_radius_km -- distance, in km, from points to start sampling
          - sampling_radius_factors -- increasing size of sampling area,
             expressed as a factor times the sampling radius (or grid resolution,
             for the bundled netcdf data).
@@ -64,7 +66,7 @@ class BaseLookUp(metaclass=abc.ABCMeta):
 
     ADDITIONAL_OPTIONS_STRING = ""  # optionally defined in derived classes
 
-    DEFAULT_SAMPLING_RADIUS_KM = 0.25
+
 
     def __init__(self, **options):
         """Constructor
@@ -76,12 +78,10 @@ class BaseLookUp(metaclass=abc.ABCMeta):
 
         for k in self.CONFIG_DEFAULTS:
             attr = f"_{k}"
-            val = options[k] if options.get(k) is not None else self.CONFIG_DEFAULTS[k]
-            logging.debug(f"Setting {attr} to {val}")
-            setattr(self, attr, val)
-
-        if not hasattr(self,'_sampling_radius_km'):
-            self._sampling_radius_km = self.DEFAULT_SAMPLING_RADIUS_KM
+            if not hasattr(self, attr):
+                val = options[k] if options.get(k) is not None else self.CONFIG_DEFAULTS[k]
+                logging.debug(f"Setting {attr} to {val}")
+                setattr(self, attr, val)
 
     ##
     ## Public Interface

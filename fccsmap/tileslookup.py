@@ -27,6 +27,8 @@ class FccsTilesLookUp(BaseLookUp):
          - index_shapefile -- default: index.shp
     """
 
+    DEFAULT_SAMPLING_RADIUS_KM = 0.25
+
     def __init__(self, **options):
         """Constructor
 
