@@ -31,14 +31,14 @@ setup(
     url='https://github.com/pnwairfire/fccsmap/',
     description='supports the look-up of FCCS fuelbed information by lat/lng or vector geo spatial data.',
     install_requires=[
-        "afscripting>=2.0.0",
-        # Note: numpy and gdal must now be installed manually beforehand
-        "shapely==2.0.1",
+        "afscripting>=3.0.0,<4.0.0",
+        # Note: numpy should be installed by dependencies
+        "shapely==2.0.6",
         "rasterstats==0.19.0",
-        "gdal==3.4.1",
-        "geopandas==0.14.2",
-        "matplotlib==3.5.1",
-        "rioxarray==0.15.0"
+        "GDAL==3.8.4",
+        "geopandas==1.0.1",
+        "matplotlib==3.9.2",
+        "rioxarray==0.17.0"
     ],
     dependency_links=[
         "https://pypi.airfire.org/simple/afscripting/",
