@@ -3,6 +3,10 @@ from pytest import raises
 from fccsmap.lookup import FccsLookUp
 
 
+# TODO: move tests to test_baselookup as appropriate
+# TODO: add truncation tests with max_fuelbed_count_threshold set
+
+
 class TestFccsLookUp(object):
     """Tests for FccsLookUp.look_up
 
