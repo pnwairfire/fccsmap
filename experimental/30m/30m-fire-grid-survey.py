@@ -38,38 +38,38 @@ Examples:
   Lower 48
 
     {script} -w -130.0 -e -64.0 -s 19.0 -n 50.0 \\
-      -f ~/WFEIS-30m-FCCS-LANDFIRE-data/LF2022_FCCS_220_CONUS/Tif/LC22_FCCS_220.tif \\
+      -f ~/30m-FCCS/LF2022_FCCS_220_CONUS/Tif/LC22_FCCS_220.tif \\
       -j {output_dirname}/30m-fccs-Lower48-output.json
 
 
   PNW 1.33km met bounds
 
     {script} -w -126.0 -e -111.0 -s 41.75 -n 49.25 \\
-      -f ~/WFEIS-30m-FCCS-LANDFIRE-data/LF2022_FCCS_220_CONUS/Tif/LC22_FCCS_220.tif \\
+      -f ~/30m-FCCS/LF2022_FCCS_220_CONUS/Tif/LC22_FCCS_220.tif \\
       -j {output_dirname}/30m-fccs-PNW-1.33km-output.json
 
   Area around Winthrop, WA
 
     {script} -w -120.3 -e -120.1 -s 48.4 -n 48.5 \\
-      -f ~/WFEIS-30m-FCCS-LANDFIRE-data/LF2022_FCCS_220_CONUS/Tif/LC22_FCCS_220.tif \\
+      -f ~/30m-FCCS/LF2022_FCCS_220_CONUS/Tif/LC22_FCCS_220.tif \\
       -j {output_dirname}/30m-fccs-WinthropWA-output.json
 
   Hawaii:
 
     {script} -w -160.5 -e -154.5 -s 19.0 -n 22.4 \\
-      -f ~/WFEIS-30m-FCCS-LANDFIRE-data/LF2022_FCCS_220_HI/Tif/LH22_FCCS_220.tif \\
+      -f ~/30m-FCCS/LF2022_FCCS_220_HI/Tif/LH22_FCCS_220.tif \\
       -j {output_dirname}/30m-fccs-Hawaii-output.json
 
   Area on west side of the Big Island (Hawaii)
 
     {script} -w -155.2 -e -155.1 -s 19.5 -n 19.6 \\
-      -f ~/WFEIS-30m-FCCS-LANDFIRE-data/LF2022_FCCS_220_HI/Tif/LH22_FCCS_220.tif \\
+      -f ~/30m-FCCS/LF2022_FCCS_220_HI/Tif/LH22_FCCS_220.tif \\
       -j {output_dirname}/30m-fccs-HawaiiBigIsland-output.json
 
   Area on Maui
 
     {script} -w -156.3 -e -156.2 -s 20.7 -n 20.8 \\
-      -f ~/WFEIS-30m-FCCS-LANDFIRE-data/LF2022_FCCS_220_HI/Tif/LH22_FCCS_220.tif \\
+      -f ~/30m-FCCS/LF2022_FCCS_220_HI/Tif/LH22_FCCS_220.tif \\
       -j {output_dirname}/30m-fccs-HawaiiMaui-output.json
  """.format(script=sys.argv[0],
         output_dirname=os.path.join(os.path.dirname(sys.argv[0]), 'output'))
