@@ -16,7 +16,7 @@ have been made but are not guaranteed.
 ## External Dependencies
 
 Whether cloning the repo or installing with pip, you'll first need to
-manually install numpy, gdal, proj, and netcdf, which fccsmap depends on.
+manually install gdal, proj, and netcdf, which fccsmap depends on.
 
 ### Mac
 
@@ -32,14 +32,6 @@ On a mac, using [Homebrew](http://brew.sh/):
 Note that the '--with-netcdf' option is required to build gdal with the
 netCDF driver. See http://trac.osgeo.org/gdal/wiki/NetCDF for more information.
 
-Additionally, you'll need numpy and gdal python bindings.  These used to be
-baked into setup.py, but the version available for install depends
-on your platform.
-
-    pip install numpy
-    gdal-config --version
-    pip install gdal==`gdal-config --version`
-
 Note that another source for Open Source GIS packages is
 http://www.kyngchaos.com/software/unixport.
 
@@ -47,43 +39,13 @@ http://www.kyngchaos.com/software/unixport.
 
 These instructions assume you already have C and C++ compilers, etc. installed
 
-#### Ubuntu, 12.04 LTS (precise)
-
-    sudo apt-get update
-    sudo apt-get install -y python3 python3-dev python3-pip
-    sudo pip3 install --upgrade pip3
-    sudo apt-get install -y libnetcdf-dev proj
-    sudo apt-get install -y libgdal-dev
-    sudo apt-get install -y python3-numpy python3-gdal
-    sudo apt-get install -y libxml2-dev libxslt1-dev
-
-#### Ubuntu, 16.04 LTS (Xenial)
-
-    sudo apt-get update
-    sudo apt-get install -y python3 python3-dev python3-pip
-    sudo pip3 install distribute
-    sudo apt-get install -y libnetcdf-dev libproj-dev
-    sudo apt-get install -y libgdal-dev
-    sudo apt-get install -y python3-numpy python3-gdal
-    sudo apt-get install -y libxml2-dev libxslt1-dev
-
-#### Ubuntu 20.04 LTS
+#### Ubuntu 24.04 LTS
 
     sudo apt-get update && sudo apt-get install -y \
         python3 python3-dev python3-pip \
         libnetcdf-dev libproj-dev \
         libgdal-dev \
-        python3-numpy python3-gdal \
         libxml2-dev libxslt1-dev
-
-### pyenv on ubuntu
-
-If using pyenv, you'll need to install numpy and gdal with pip:
-
-    pip install numpy
-    export CPLUS_INCLUDE_PATH=/usr/include/gdal
-    export CPLUS_INCLUDE_PATH=/usr/include/gdal
-    pip install gdal==`gdal-config --version`
 
 ## Development
 

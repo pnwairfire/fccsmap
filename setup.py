@@ -24,7 +24,7 @@ setup(
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
-        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.12",
         "Operating System :: POSIX",
         "Operating System :: MacOS"
     ],
@@ -32,7 +32,7 @@ setup(
     description='supports the look-up of FCCS fuelbed information by lat/lng or vector geo spatial data.',
     install_requires=[
         "afscripting>=3.0.0,<4.0.0",
-        # Note: numpy should be installed by dependencies
+        "numpy==2.1.1",
         "shapely==2.0.6",
         "rasterstats==0.19.0",
         "GDAL==3.8.4",
