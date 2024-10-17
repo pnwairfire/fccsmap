@@ -28,10 +28,10 @@ defaults.
 For example, using a 1km resolution grid of FCCS fuelbed data, and given
 the following input,
 
-    {
+    ./bin/fccsmap --indent 2 -g '{
           "type": "Point",
           "coordinates": [-84.8269438083957, 32.5010839781243 ]
-    }
+    }'
 
 what is actually used to look up fuelbeds is the following polygon
 
@@ -49,21 +49,23 @@ what is actually used to look up fuelbeds is the following polygon
         ]
     }
 
-In this case, the initial look-up returns 75% FCCS #185 and 25% FCCS #185, and the subsequent look-up is not required.
+In this case, the initial look-up returns 75% FCCS #185 and 25% FCCS #283,
+and the subsequent look-up is not required.
 
 ### Two samplings
 
 Now consider the following input, again using a 1km resolution grid of FCCS
 fuelbed data
 
-    {
+    ./bin/fccsmap --indent 2 -g '{
           "type": "Point",
           "coordinates": [-120.4753312, 48.0786983 ]
-    }
+    }'
 
 The initial lookup uses the following polygon
 
     {
+        'type': 'MultiPolygon',
         'coordinates': [
             [
                 [
@@ -73,14 +75,14 @@ The initial lookup uses the following polygon
                     [-120.46188574735507, 48.06968929099099]
                 ]
             ]
-        ],
-        'type': 'MultiPolygon'
+        ]
     }
 
 which returns 100% FCCS #900, which is an ignored fuelbed. So, the area is
 enlarged to the following:
 
     {
+        'type': 'MultiPolygon',
         'coordinates': [
             [
                 [
@@ -90,12 +92,10 @@ enlarged to the following:
                     [-120.43499484206522, 48.051671272972975]
                 ]
             ]
-        ],
-        'type': 'MultiPolygon'
+        ]
     }
 
 which returns 59.46% FCCS #52, 2.70% FCCS #60, and 37.84% FCCS #900.
-
 
 ## With area specified
 
