@@ -86,12 +86,15 @@ class BaseLookUp(metaclass=abc.ABCMeta):
     ## Public Interface
     ##
 
-    def look_up(self, geo_data):
+    def look_up(self, geo_data, area_acres=None):
         """Looks up FCCS fuelbed information within a region defined by
         multipolygon region
 
         Arguments
          - geo_data -- vector data, json formatted (or already loaded)
+
+        Kwargs
+        - area_acres -- only relevent to Point and MultiPoint data
 
         Examples of valid geo_data format:
 
@@ -127,11 +130,23 @@ class BaseLookUp(metaclass=abc.ABCMeta):
             geo_data = json.loads(geo_data)
 
         if not self._no_sampling and geo_data["type"] in ('Point', 'MultiPoint'):
+
+            # If area_acres is defined, and if this is a MultiPoint, we want
+            # to search an area around each point based on its fraction of
+            # the total area. So, divide area_acres by the number of points
+            area_acres_per_point = (
+                (area_acres / len(geo_data['coordinates']))
+                if (area_acres and geo_data["type"] == 'MultiPoint')
+                else area_acres
+            )
+
+            sampling_radius_km = self._sampling_radius_from_area(area_acres_per_point)
+
             for radius_factor in self._sampling_radius_factors:
                 logging.debug(f"Sampling {radius_factor} * sampling radius")
 
                 new_geo_data = self._transform_points(geo_data,
-                    radius_factor * self._sampling_radius_km)
+                    radius_factor * sampling_radius_km)
                 stats = self._look_up(new_geo_data)
                 logging.debug(f"Stats from sampling {stats}")
 
@@ -161,6 +176,17 @@ class BaseLookUp(metaclass=abc.ABCMeta):
     ##
     ## Helper methods
     ##
+
+    SQUARE_KM_PER_ACRE = 0.00404686
+
+    def _sampling_radius_from_area(self, area_acres):
+        if not area_acres:
+            return self._sampling_radius_km
+
+        area_square_km = area_acres * self.SQUARE_KM_PER_ACRE
+        dim = math.sqrt(area_square_km)
+        return dim / 2
+
 
     KM_PER_DEG_LAT = 111.0
     KM_PER_DEG_LNG_AT_EQUATOR = 111.321

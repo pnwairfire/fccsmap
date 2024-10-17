@@ -40,6 +40,26 @@ class TestFccsLookUp(object):
 
         assert self._lookup.look_up(geo_data) == expected
 
+    def test_point_with_area(self):
+        geo_data = {
+            "type": "Point",
+            # hills east of Methow valley
+            "coordinates": [-119.877732, 48.4255591]
+        }
+        expected = {
+            'fuelbeds': {
+                '52': {
+                    'percent': 100.0,
+                    'grid_cells': 4
+                }
+            },
+            'sampled_grid_cells': 4,
+            'sampled_area': 406166.10213060165,
+            'units': 'm^2'
+        }
+
+        assert self._lookup.look_up(geo_data, area_acres=100) == expected
+
     def test_point_in_water(self):
         geo_data = {
             "type": "Point",
@@ -77,6 +97,24 @@ class TestFccsLookUp(object):
         }
         assert self._lookup.look_up(geo_data) == expected
 
+    def test_multipoint_one_with_area(self):
+        geo_data = {
+            "type": "MultiPoint",
+            "coordinates": [
+                # hills east of Methow valley
+                [-119.8, 48.4]
+            ]
+        }
+        expected = {
+            'fuelbeds': {
+                '24': {'grid_cells': 1, 'percent': 100},
+            },
+            'sampled_grid_cells': 1,
+            'sampled_area': 499581.3316173891,
+            'units': 'm^2'
+        }
+        assert self._lookup.look_up(geo_data, area_acres=123) == expected
+
     def test_multipoint_two(self):
         geo_data = {
             "type": "MultiPoint",
@@ -97,6 +135,25 @@ class TestFccsLookUp(object):
             'units': 'm^2',
         }
         assert self._lookup.look_up(geo_data) == expected
+
+    def test_multipoint_two_with_area(self):
+        geo_data = {
+            "type": "MultiPoint",
+            "coordinates": [
+                [-119.8, 48.4],
+                [-119.0, 49.0]
+            ]
+        }
+        expected = {
+            'fuelbeds': {
+                '4': {'grid_cells': 1, 'percent': 50},
+                '24': {'grid_cells': 1, 'percent': 50}
+            },
+            'sampled_grid_cells': 2,
+            'sampled_area': 812384.0585002555,
+            'units': 'm^2',
+        }
+        assert self._lookup.look_up(geo_data, area_acres=200) == expected
 
     def test_multipoint_in_water(self):
         geo_data = {
