@@ -36,7 +36,7 @@ class BaseLookUp(metaclass=abc.ABCMeta):
         "max_fuelbed_count_threshold": None,
         "no_sampling": False,
         "sampling_radius_km": 1.0,
-        "sampling_radius_factors": [3, 5],
+        "sampling_radius_factors": [1, 3, 5],
         "use_all_grid_cells": False,
     }
 

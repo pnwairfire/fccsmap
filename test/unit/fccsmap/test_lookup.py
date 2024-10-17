@@ -29,12 +29,12 @@ class TestFccsLookUp(object):
         expected = {
             'fuelbeds': {
                 '52': {
-                    'percent': 100.00000000000001,
-                    'grid_cells': 34
+                    'percent': 100.0,
+                    'grid_cells': 4
                 }
             },
-            'sampled_grid_cells': 37,
-            'sampled_area': 36131660.998253256,
+            'sampled_grid_cells': 4,
+            'sampled_area': 4014629.570957375,
             'units': 'm^2'
         }
 
@@ -68,11 +68,11 @@ class TestFccsLookUp(object):
         }
         expected = {
             'fuelbeds': {
-                '24': {'grid_cells': 25, 'percent': 67.56756756756756},
-                '52': {'grid_cells': 12, 'percent': 32.432432432432435}
+                '24': {'grid_cells': 4, 'percent': 80},
+                '52': {'grid_cells': 1, 'percent': 20}
             },
-            'sampled_grid_cells': 37,
-            'sampled_area': 36131445.92747246,
+            'sampled_grid_cells': 5,
+            'sampled_area': 4014605.6737663546,
             'units': 'm^2'
         }
         assert self._lookup.look_up(geo_data) == expected
@@ -87,13 +87,13 @@ class TestFccsLookUp(object):
         }
         expected = {
             'fuelbeds': {
-                '4': {'grid_cells': 12, 'percent': 16.666666666666668},
-                '60': {'grid_cells': 11, 'percent': 15.277777777777779},
-                '52': {'grid_cells': 24, 'percent': 33.333333333333336},
-                '24': {'grid_cells': 25, 'percent': 34.72222222222222}
+                '4': {'grid_cells': 2, 'percent': 20},
+                '60': {'grid_cells': 2, 'percent': 20},
+                '52': {'grid_cells': 2, 'percent': 20},
+                '24': {'grid_cells': 4, 'percent': 40}
             },
-            'sampled_grid_cells': 72,
-            'sampled_area': 72267934.7403754,
+            'sampled_grid_cells': 10,
+            'sampled_area': 8029771.678826397,
             'units': 'm^2',
         }
         assert self._lookup.look_up(geo_data) == expected
