@@ -1,14 +1,25 @@
 # Sampling
 
+## When area is not specified
+
 When a single point is passed in as input, the default behavior of
 `FccsLookUp.look_up` is to determine the distribution of fuelbeds
-representative of the neighborhood around the point. The first
+representative of the neighborhood around the point. Using the default
+configuration, the first
 pass considers a square area whose dimensions are twice the resolution of
-the gridded FCCS data (i.e. four time the size of a grid cell)
+the gridded FCCS data (i.e. four times the size of a grid cell)
 and centered on the input point. If this returns too high a percentage
 of ignored fuelbeds (which are FCCS #0 & #900, by default), a larger
 neighborhood is sampled - a square whose dimensions are six times
 the grid resolution (i.e. thus 36 times the size of a grid cell).
+And if this returns to much ignored, an even larger neighborhood is
+sampled - a square whose dimensions are ten times
+the grid resolution (i.e. thus 100 times the size of a grid cell).
+
+The sizes and number of neighborhoods sampled can be changed
+using the `sampling_radius_km` and `sampling_radius_factors`
+configuration options, but the examples below are based on the
+defaults.
 
 ## Examples
 
@@ -85,7 +96,22 @@ enlarged to the following:
 
 which returns 59.46% FCCS #52, 2.70% FCCS #60, and 37.84% FCCS #900.
 
+
+## With area specified
+
+If `area_acres` is set in the call to `FccsLookUp.look_up`, the logic described
+above is followed with one exception.  The `sampling_radius_km` config setting
+is ignored, and the sampling radius is instead determined based on the
+specified area.
+
+For example, consider `area_acres` set to 3954. That equals 16 km^2, which would mean a 4km x 4km square neighborhood. This translates to an
+initial sampling radius of 2km. (i.e. Set the northern bounds 2km north of
+the point, the eastern bounds 2km east of the point, etc.)  So, the first
+sampling would use
+that 4km x 4km square neighborhood. The second sampling, if required, would
+use a 12km x 12km square neighborhood. And third sampling, if required, would
+use a 20km x 20km square neighborhood.
+
 ## Potential Improvements
 
- - Use a neighborhood whose area is proportional to the input area.  (This would require adding a kwarg to `FccsLookUp.look_up` to specify input area.)
  - Use a circular neighborhood instead of square.
