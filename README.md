@@ -25,7 +25,7 @@ as well as C and C++ compilers, etc.
 
 On a mac, using [Homebrew](http://brew.sh/):
 
-    brew install homebrew/science/netcdf
+    brew install netcdf
     brew install proj
     brew install gdal --with-netcdf --enable-unsupported
 
