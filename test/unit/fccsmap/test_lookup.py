@@ -1,10 +1,18 @@
-from pytest import raises
+from pytest import approx, raises
 
 from fccsmap.lookup import FccsLookUp
 
 
 # TODO: move tests to test_baselookup as appropriate
 # TODO: add truncation tests with max_fuelbed_count_threshold set
+
+# Tolerance for the reprojected-area field. Fuelbed classification and
+# grid-cell counts are asserted exactly; only the summed geodetic area is
+# compared with rel=1e-9 to absorb last-bit drift from upstream reprojection
+# libraries (geopandas/pyproj/PROJ/numpy). Worst observed drift across these
+# tests is ~2e-12 relative, so 1e-9 leaves tons of headroom while remaining far
+# tighter than the inherent ~1e-3 uncertainty of geodetic area computation.
+AREA_REL_TOL = 1e-9
 
 
 class TestFccsLookUp(object):
@@ -34,7 +42,7 @@ class TestFccsLookUp(object):
                 }
             },
             'sampled_grid_cells': 4,
-            'sampled_area': 4014629.570957375,
+            'sampled_area': approx(4014629.570957375, rel=AREA_REL_TOL),
             'units': 'm^2'
         }
 
@@ -54,7 +62,7 @@ class TestFccsLookUp(object):
                 }
             },
             'sampled_grid_cells': 4,
-            'sampled_area': 406166.10213060165,
+            'sampled_area': approx(406166.10213060165, rel=AREA_REL_TOL),
             'units': 'm^2'
         }
 
@@ -72,7 +80,7 @@ class TestFccsLookUp(object):
                 '52': {'grid_cells': 10, 'percent': 47.61904761904762},
                 '60': {'grid_cells': 7, 'percent': 33.33333333333333}
             },
-            'sampled_area': 36128384.22755571,
+            'sampled_area': approx(36128384.22755571, rel=AREA_REL_TOL),
             'sampled_grid_cells': 36,
             'units': 'm^2'
         }
@@ -92,7 +100,7 @@ class TestFccsLookUp(object):
                 '52': {'grid_cells': 1, 'percent': 20}
             },
             'sampled_grid_cells': 5,
-            'sampled_area': 4014605.6737663546,
+            'sampled_area': approx(4014605.6737663546, rel=AREA_REL_TOL),
             'units': 'm^2'
         }
         assert self._lookup.look_up(geo_data) == expected
@@ -110,7 +118,7 @@ class TestFccsLookUp(object):
                 '24': {'grid_cells': 1, 'percent': 100},
             },
             'sampled_grid_cells': 1,
-            'sampled_area': 499581.3316173891,
+            'sampled_area': approx(499581.3316173891, rel=AREA_REL_TOL),
             'units': 'm^2'
         }
         assert self._lookup.look_up(geo_data, area_acres=123) == expected
@@ -131,7 +139,7 @@ class TestFccsLookUp(object):
                 '24': {'grid_cells': 4, 'percent': 40}
             },
             'sampled_grid_cells': 10,
-            'sampled_area': 8029771.678826397,
+            'sampled_area': approx(8029771.678826397, rel=AREA_REL_TOL),
             'units': 'm^2',
         }
         assert self._lookup.look_up(geo_data) == expected
@@ -150,7 +158,7 @@ class TestFccsLookUp(object):
                 '24': {'grid_cells': 1, 'percent': 50}
             },
             'sampled_grid_cells': 2,
-            'sampled_area': 812384.0585002555,
+            'sampled_area': approx(812384.0585002555, rel=AREA_REL_TOL),
             'units': 'm^2',
         }
         assert self._lookup.look_up(geo_data, area_acres=200) == expected
@@ -165,7 +173,7 @@ class TestFccsLookUp(object):
             ]
         }
         expected = {
-            'sampled_area': 72257497.5623076,
+            'sampled_area': approx(72257497.5623076, rel=AREA_REL_TOL),
             'sampled_grid_cells': 72,
             'units': 'm^2',
             'fuelbeds': {
@@ -192,7 +200,7 @@ class TestFccsLookUp(object):
         }
         expected = {
             'units': 'm^2',
-            'area': 8217580424.336674,
+            'area': approx(8217580424.336674, rel=AREA_REL_TOL),
             'grid_cells': 8219,
             'fuelbeds': {
                 '237': {'grid_cells': 824, 'percent': 11.382787677856056},
@@ -243,7 +251,7 @@ class TestFccsLookUp(object):
                 '61': {'grid_cells': 1095, 'percent': 15.124309392265191},
                 '9': {'grid_cells': 927, 'percent': 12.803867403314916}
             },
-            "area": 16273677189.941872
+            "area": approx(16273677189.941872, rel=AREA_REL_TOL)
         }
         assert self._lookup.look_up(geo_data) == expected
 
