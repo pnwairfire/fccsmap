@@ -2,10 +2,6 @@ from setuptools import setup, find_packages
 
 from fccsmap import __version__
 
-test_requirements = []
-with open('requirements-test.txt') as f:
-    test_requirements = [r for r in f.read().splitlines()]
-
 setup(
     name='fccsmap',
     version=__version__,
@@ -36,12 +32,11 @@ setup(
         "shapely==2.0.6",
         "rasterstats==0.19.0",
         "GDAL==3.8.4",
-        "geopandas==1.0.1",
+        "geopandas>=1.0,<2.0",
         "matplotlib==3.9.2",
         "rioxarray==0.17.0"
     ],
     dependency_links=[
         "https://pypi.airfire.org/simple/afscripting/",
     ],
-    tests_require=test_requirements
 )
