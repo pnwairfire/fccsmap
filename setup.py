@@ -31,7 +31,7 @@ setup(
         "numpy==2.1.1",
         "shapely==2.0.6",
         "rasterstats==0.19.0",
-        "GDAL==3.8.4",
+        "GDAL==3.13.0",
         "geopandas>=1.0,<2.0",
         "matplotlib==3.9.2",
         "rioxarray==0.17.0"
